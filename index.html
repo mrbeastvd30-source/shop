@@ -579,6 +579,98 @@
             font-weight: 500;
         }
 
+        .site-footer {
+            position: relative;
+            overflow: hidden;
+            margin-top: 24px;
+            padding: 56px 20px 24px;
+            background: linear-gradient(145deg, #243447 0%, #2C3E50 55%, #34495E 100%);
+            color: #FFFFFF;
+        }
+
+        .site-footer::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+
+        .footer-grid {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1.25fr repeat(3, minmax(0, 1fr));
+            gap: 36px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-brand {
+            max-width: 340px;
+        }
+
+        .footer-brand h2 {
+            margin-bottom: 12px;
+            color: #FFFFFF;
+            font-size: 1.55rem;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 14px;
+            color: #FFFFFF;
+            font-size: 1rem;
+        }
+
+        .footer-column p,
+        .footer-brand p,
+        .footer-list li {
+            color: #DDE7EF;
+            font-size: 0.94rem;
+            line-height: 1.75;
+        }
+
+        .footer-list {
+            display: grid;
+            gap: 8px;
+            padding: 0;
+            list-style: none;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            min-height: 44px;
+            margin-top: 10px;
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            color: #FFFFFF;
+            font-weight: 600;
+            text-decoration: none;
+            overflow-wrap: anywhere;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .footer-link:hover {
+            border-color: rgba(255,255,255,0.42);
+            background: rgba(255,255,255,0.14);
+            transform: translateY(-2px);
+        }
+
+        .footer-bottom {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 36px auto 0;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.14);
+            color: #C5D3DF;
+            font-size: 0.84rem;
+        }
+
         .product-card {
             background: white;
             border-radius: 20px;
@@ -1303,6 +1395,38 @@
                 font-size: 1rem;
             }
 
+            .site-footer {
+                margin-top: 12px;
+                padding: 42px 18px 28px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 28px;
+            }
+
+            .footer-brand { max-width: none; }
+
+            .footer-column p,
+            .footer-brand p,
+            .footer-list li {
+                font-size: 1rem;
+            }
+
+            .footer-link {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 8px;
+                margin-top: 30px;
+                padding-bottom: 8px;
+                text-align: center;
+            }
+
             .cart-sidebar {
                 width: 100%;
             }
@@ -1542,6 +1666,37 @@
         <div class="products-grid" id="productsGrid">
             <!-- Products will be loaded here -->
         </div>
+
+        <footer class="site-footer">
+            <div class="footer-grid">
+                <section class="footer-brand">
+                    <h2>Sabina Style</h2>
+                    <p data-i18n="footerAbout">O‘zbekiston bo‘ylab zamonaviy va sifatli kiyimlarni qulay buyurtma qilish uchun onlayn do‘kon.</p>
+                </section>
+                <section class="footer-column">
+                    <h3 data-i18n="footerDeliveryTitle">Yetkazib berish</h3>
+                    <p data-i18n="footerDeliveryBts">Buyurtmalar BTS orqali yetkazib beriladi.</p>
+                    <p data-i18n="footerDeliveryDetails">Yetkazib berish tafsilotlari buyurtma tasdiqlangandan so‘ng kelishiladi.</p>
+                </section>
+                <section class="footer-column">
+                    <h3 data-i18n="footerTelegramTitle">Telegram kanalimiz</h3>
+                    <p data-i18n="footerTelegramText">Yangiliklar, yangi mahsulotlar va e’lonlarni Telegram orqali kuzating.</p>
+                    <a class="footer-link" href="https://t.me/+xygVrAHUB6xjZjcy" target="_blank" rel="noopener noreferrer">https://t.me/+xygVrAHUB6xjZjcy</a>
+                </section>
+                <section class="footer-column">
+                    <h3 data-i18n="footerServiceTitle">Xizmat haqida</h3>
+                    <ul class="footer-list">
+                        <li data-i18n="footerServiceOrder">Buyurtma ma’lumotlari operator bilan aniqlashtiriladi.</li>
+                        <li data-i18n="footerServiceLanguage">Sayt o‘zbek va rus tillarida ishlaydi.</li>
+                        <li data-i18n="footerServiceStorage">Savat va profil ma’lumotlari ushbu qurilmada saqlanadi.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 Sabina Style</span>
+                <span data-i18n="footerRights">Barcha huquqlar himoyalangan.</span>
+            </div>
+        </footer>
     </div>
 
     <!-- Cart Sidebar -->
@@ -1735,7 +1890,14 @@
                 productDeleted: "Mahsulot o‘chirildi", confirmDelete: "“{name}” mahsulotini o‘chirmoqchimisiz?",
                 noOrders: "Hozircha buyurtmalar yo‘q", profile: "Profil", name: "Ism", email: "Email",
                 address: "Manzil", ordersTitle: "Buyurtmalaringiz", order: "Buyurtma", status: "Holat",
-                date: "Sana", newStatus: "Yangi", orderConfirmed: "Buyurtma tasdiqlandi!", contactSoon: "Tez orada siz bilan bog‘lanamiz!"
+                date: "Sana", newStatus: "Yangi", orderConfirmed: "Buyurtma tasdiqlandi!", contactSoon: "Tez orada siz bilan bog‘lanamiz!",
+                footerAbout: "O‘zbekiston bo‘ylab zamonaviy va sifatli kiyimlarni qulay buyurtma qilish uchun onlayn do‘kon.",
+                footerDeliveryTitle: "Yetkazib berish", footerDeliveryBts: "Buyurtmalar BTS orqali yetkazib beriladi.",
+                footerDeliveryDetails: "Yetkazib berish tafsilotlari buyurtma tasdiqlangandan so‘ng kelishiladi.",
+                footerTelegramTitle: "Telegram kanalimiz", footerTelegramText: "Yangiliklar, yangi mahsulotlar va e’lonlarni Telegram orqali kuzating.",
+                footerServiceTitle: "Xizmat haqida", footerServiceOrder: "Buyurtma ma’lumotlari operator bilan aniqlashtiriladi.",
+                footerServiceLanguage: "Sayt o‘zbek va rus tillarida ishlaydi.", footerServiceStorage: "Savat va profil ma’lumotlari ushbu qurilmada saqlanadi.",
+                footerRights: "Barcha huquqlar himoyalangan."
             },
             ru: {
                 siteTitle: "Sabina Style — современная одежда", user: "Пользователь",
@@ -1779,7 +1941,14 @@
                 productDeleted: "Товар удалён", confirmDelete: "Удалить товар «{name}»?",
                 noOrders: "Заказов пока нет", profile: "Профиль", name: "Имя", email: "Email",
                 address: "Адрес", ordersTitle: "Ваши заказы", order: "Заказ", status: "Статус",
-                date: "Дата", newStatus: "Новый", orderConfirmed: "Заказ подтверждён!", contactSoon: "Мы скоро свяжемся с вами!"
+                date: "Дата", newStatus: "Новый", orderConfirmed: "Заказ подтверждён!", contactSoon: "Мы скоро свяжемся с вами!",
+                footerAbout: "Интернет-магазин современной и качественной одежды с удобным заказом по всему Узбекистану.",
+                footerDeliveryTitle: "Доставка", footerDeliveryBts: "Заказы доставляются через BTS.",
+                footerDeliveryDetails: "Детали доставки согласовываются после подтверждения заказа.",
+                footerTelegramTitle: "Наш Telegram-канал", footerTelegramText: "Следите за новостями, новинками и объявлениями в Telegram.",
+                footerServiceTitle: "О сервисе", footerServiceOrder: "Детали заказа уточняются с оператором.",
+                footerServiceLanguage: "Сайт работает на узбекском и русском языках.", footerServiceStorage: "Корзина и данные профиля сохраняются на этом устройстве.",
+                footerRights: "Все права защищены."
             }
         };
 
