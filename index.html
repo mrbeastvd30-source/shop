@@ -380,10 +380,10 @@
         }
 
         .user-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            padding: 10px 20px;
+            background: #FFFFFF;
+            color: var(--text-primary);
+            border: 1px solid rgba(126, 200, 227, 0.28);
+            padding: 6px 14px 6px 6px;
             border-radius: 25px;
             cursor: pointer;
             font-family: 'Poppins', sans-serif;
@@ -391,6 +391,30 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            min-height: 48px;
+            box-shadow: 0 6px 18px rgba(44, 62, 80, 0.08);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .user-btn:hover,
+        .user-btn[aria-expanded="true"] {
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(126, 200, 227, 0.22);
+        }
+
+        .user-avatar {
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            flex: 0 0 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7EC8E3, #EC4899);
+            color: #FFFFFF;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.32);
         }
 
         .user-dropdown {
@@ -403,21 +427,39 @@
             min-width: 200px;
             display: none;
             overflow: hidden;
+            z-index: 300;
+            padding: 8px;
+            border: 1px solid rgba(126, 200, 227, 0.18);
         }
 
         .user-dropdown.show {
             display: block;
+            animation: profileMenuIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .user-dropdown-item {
-            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            min-height: 48px;
+            padding: 12px 14px;
             cursor: pointer;
-            transition: all 0.2s;
-            border-bottom: 1px solid var(--background);
+            transition: background 0.2s ease, color 0.2s ease;
+            border-radius: 10px;
         }
 
         .user-dropdown-item:hover {
             background: var(--background);
+        }
+
+        .user-dropdown-item:last-child {
+            margin-top: 4px;
+            color: #B91C1C;
+            background: #FEF2F2;
+        }
+
+        @keyframes profileMenuIn {
+            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         /* Hero Section */
@@ -1187,17 +1229,35 @@
             .nav-icons { gap: 6px; }
             .user-btn {
                 min-width: 48px;
-                max-width: 84px;
+                max-width: 108px;
                 min-height: 44px;
-                padding: 9px 11px;
+                padding: 5px 10px 5px 5px;
             }
-            .user-btn > span:first-child { display: none; }
+            .user-btn > .user-avatar { display: grid; }
 
             #userNameDisplay {
                 display: block;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+            }
+
+            .user-dropdown {
+                position: fixed;
+                top: 74px;
+                right: 12px;
+                left: 12px;
+                min-width: 0;
+                padding: 10px;
+                border-radius: 18px;
+                box-shadow: 0 18px 48px rgba(44,62,80,0.2);
+                backdrop-filter: blur(18px);
+            }
+
+            .user-dropdown-item {
+                min-height: 52px;
+                padding: 13px 14px;
+                font-size: 0.95rem;
             }
 
             .icon-btn {
@@ -1330,7 +1390,7 @@
             .logo { font-size: 1.05rem; }
             .user-btn { width: 44px; min-width: 44px; padding: 0; border-radius: 50%; }
             #userNameDisplay { display: none; }
-            .user-btn::after { content: '👤'; font-size: 1rem; }
+            .user-avatar { width: 40px; height: 40px; flex-basis: 40px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1440,15 +1500,15 @@
                 </div>
                 <div class="nav-icons">
                     <div class="user-menu">
-                        <button class="user-btn" onclick="toggleUserDropdown()">
-                            <span>👤</span>
+                        <button class="user-btn" id="userMenuButton" onclick="toggleUserDropdown()" aria-haspopup="menu" aria-expanded="false" aria-controls="userDropdown">
+                            <span class="user-avatar" id="userAvatar" aria-hidden="true">S</span>
                             <span id="userNameDisplay" data-i18n="user">Foydalanuvchi</span>
                         </button>
-                        <div class="user-dropdown" id="userDropdown">
-                            <div class="user-dropdown-item" onclick="openProfile()" data-i18n="myProfile">👤 Mening profilim</div>
-                            <div class="user-dropdown-item" onclick="openOrders()" data-i18n="myOrders">📦 Buyurtmalarim</div>
-                            <div class="user-dropdown-item" onclick="openWishlist()" data-i18n="wishlist">❤️ Sevimlilar</div>
-                            <div class="user-dropdown-item" onclick="logout()" data-i18n="logout">🚪 Chiqish</div>
+                        <div class="user-dropdown" id="userDropdown" role="menu">
+                            <div class="user-dropdown-item" role="menuitem" tabindex="0" onclick="openProfile()" data-i18n="myProfile">👤 Mening profilim</div>
+                            <div class="user-dropdown-item" role="menuitem" tabindex="0" onclick="openOrders()" data-i18n="myOrders">📦 Buyurtmalarim</div>
+                            <div class="user-dropdown-item" role="menuitem" tabindex="0" onclick="openWishlist()" data-i18n="wishlist">❤️ Sevimlilar</div>
+                            <div class="user-dropdown-item" role="menuitem" tabindex="0" onclick="logout()" data-i18n="logout">🚪 Chiqish</div>
                         </div>
                     </div>
                     <button class="icon-btn" onclick="toggleWishlist()" aria-label="Sevimlilar" data-i18n-aria-label="wishlistLabel">
@@ -1907,10 +1967,19 @@
                 });
             });
             document.addEventListener('keydown', event => {
+                if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('[role="menuitem"]')) {
+                    event.preventDefault();
+                    event.target.click();
+                    return;
+                }
                 if (event.key !== 'Escape') return;
                 const activeModal = document.querySelector('.modal-overlay.active');
                 if (activeModal) closeModal(activeModal.id);
                 else if (document.getElementById('cartSidebar').classList.contains('open')) toggleCart();
+                else if (document.getElementById('userDropdown').classList.contains('show')) {
+                    closeUserDropdown();
+                    document.getElementById('userMenuButton').focus();
+                }
             });
         };
 
@@ -2003,6 +2072,7 @@
             document.body.classList.add('main-active');
             document.getElementById('mainSite').classList.add('show');
             document.getElementById('userNameDisplay').textContent = currentUser.name.split(' ')[0];
+            document.getElementById('userAvatar').textContent = currentUser.name.trim().charAt(0) || 'S';
             document.getElementById('checkoutName').value = currentUser.name;
             document.getElementById('checkoutPhone').value = currentUser.phone;
             document.getElementById('checkoutAddress').value = currentUser.address;
@@ -2291,12 +2361,19 @@
 
         // UI Functions
         function toggleUserDropdown() {
-            document.getElementById('userDropdown').classList.toggle('show');
+            const dropdown = document.getElementById('userDropdown');
+            const isOpen = dropdown.classList.toggle('show');
+            document.getElementById('userMenuButton').setAttribute('aria-expanded', String(isOpen));
+        }
+
+        function closeUserDropdown() {
+            document.getElementById('userDropdown').classList.remove('show');
+            document.getElementById('userMenuButton').setAttribute('aria-expanded', 'false');
         }
 
         function openProfile() {
             alert(`${t('profile')}:\n\n${t('name')}: ${currentUser.name}\n${t('phone')}: ${currentUser.phone}\n${t('email')}: ${currentUser.email}\n${t('address')}: ${currentUser.address}`);
-            document.getElementById('userDropdown').classList.remove('show');
+            closeUserDropdown();
         }
 
         function openOrders() {
@@ -2306,12 +2383,12 @@
             } else {
                 alert(`${t('ordersTitle')}:\n\n${userOrders.map(o => `${t('order')} #${o.id}\n${t('total')} ${formatPrice(o.total)}\n${t('status')}: ${o.status === 'New' ? t('newStatus') : o.status}\n${t('date')}: ${new Date(o.date).toLocaleString(currentLanguage === 'uz' ? 'uz-UZ' : 'ru-RU')}`).join('\n\n')}`);
             }
-            document.getElementById('userDropdown').classList.remove('show');
+            closeUserDropdown();
         }
 
         function openWishlist() {
             showToast(t('wishlistItems', { count: wishlist.length }), 'success');
-            document.getElementById('userDropdown').classList.remove('show');
+            closeUserDropdown();
         }
 
         function closeModal(modalId) {
@@ -2375,7 +2452,7 @@
         // Close dropdowns when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.user-menu')) {
-                document.getElementById('userDropdown').classList.remove('show');
+                closeUserDropdown();
             }
         });
     </script>
