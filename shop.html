@@ -1,0 +1,53 @@
+<div class="form-group">
+    <label>Product name</label>
+    <input type="text" id="prodName" required placeholder="Enter product name">
+</div>
+
+<div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div class="form-group">
+        <label>Category</label>
+        <select id="prodCategory" required>
+            <option value="men">Men</option>
+            <option value="women">Women</option>
+            <option value="kids">Kids</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Price</label>
+        <input type="number" id="prodPrice" required placeholder="0">
+    </div>
+</div>
+
+<div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div class="form-group">
+        <label>Old price</label>
+        <input type="number" id="prodOldPrice" placeholder="0">
+    </div>
+    
+    <div class="form-group">
+        <label>Discount %</label>
+        <input type="number" id="prodDiscount" min="0" max="100" placeholder="0">
+    </div>
+</div>
+
+<div class="form-group">
+    <label>Image upload</label>
+    <input type="file" id="prodImage" accept="image/*" style="width: 100%; padding: 0.5rem; border: 2px dashed var(--primary); border-radius: 10px;">
+    <small style="color: var(--text-light);">Upload product image</small>
+</div>
+
+<div class="form-group">
+    <label>Description</label>
+    <textarea id="prodDescription" rows="4" placeholder="Enter product description..."></textarea>
+</div>
+
+<div class="form-group">
+    <label>Sizes</label>
+    <input type="text" id="prodSizes" placeholder="S,M,L,XL" value="S,M,L,XL">
+    <small style="color: var(--text-light);">Separate sizes with commas</small>
+</div>
+
+<button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer;">
+    💾 Save product
+</button>
