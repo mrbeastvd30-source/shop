@@ -516,6 +516,27 @@
             gap: 30px;
         }
 
+        .empty-state {
+            grid-column: 1 / -1;
+            display: grid;
+            place-items: center;
+            min-height: 320px;
+            padding: 48px 20px;
+            color: #64748B;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            margin-bottom: 16px;
+            font-size: clamp(56px, 10vw, 80px);
+            line-height: 1;
+        }
+
+        .empty-state p {
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
         .product-card {
             background: white;
             border-radius: 20px;
@@ -1047,6 +1068,39 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            .main-site.show {
+                padding-bottom: calc(84px + env(safe-area-inset-bottom));
+            }
+
+            .admin-access {
+                top: auto;
+                bottom: max(12px, env(safe-area-inset-bottom));
+                left: 12px;
+                z-index: 10900;
+                opacity: 1;
+            }
+
+            .admin-access-btn {
+                min-height: 48px;
+                max-width: 156px;
+                padding: 10px 16px;
+                overflow: hidden;
+                border: 1px solid rgba(190, 24, 93, 0.14);
+                background: rgba(255,255,255,0.96);
+                box-shadow: 0 8px 24px rgba(44,62,80,0.14);
+                color: #9D174D;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                backdrop-filter: blur(12px);
+            }
+
+            body.modal-open .admin-access,
+            body.panel-open .admin-access {
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(8px);
+            }
+
             .auth-overlay {
                 align-items: flex-start;
                 padding: 72px 12px max(20px, env(safe-area-inset-bottom));
@@ -1094,40 +1148,80 @@
             }
 
             .hero h1 {
-                font-size: clamp(2rem, 10vw, 3rem);
+                margin-bottom: 14px;
+                font-size: clamp(1.9rem, 8vw, 2.5rem);
+                line-height: 1.15;
             }
 
             .hero {
-                padding: 72px 18px 64px;
+                padding: 56px 18px 52px;
             }
 
             .hero p {
                 font-size: 1rem;
+                line-height: 1.55;
+                margin-bottom: 24px;
             }
 
             .header-content {
-                gap: 12px;
-                padding: 14px 12px;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 10px;
+                padding: 12px;
             }
 
-            .logo { font-size: 1.25rem; }
-            .nav-icons { gap: 8px; }
-            .user-btn { padding: 10px 12px; }
+            .logo {
+                min-width: 0;
+                gap: 6px;
+                font-size: 1.12rem;
+                line-height: 1.1;
+                white-space: nowrap;
+            }
+
+            .logo > span:first-child { font-size: 1.25rem; }
+            .logo > span:last-child {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .nav-icons { gap: 6px; }
+            .user-btn {
+                min-width: 48px;
+                max-width: 84px;
+                min-height: 44px;
+                padding: 9px 11px;
+            }
             .user-btn > span:first-child { display: none; }
 
-            .filters {
-                justify-content: flex-start;
-                flex-wrap: nowrap;
-                gap: 10px;
-                margin: 28px auto;
-                padding: 4px 16px 10px;
-                overflow-x: auto;
-                scrollbar-width: none;
-                scroll-snap-type: x proximity;
+            #userNameDisplay {
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
-            .filters::-webkit-scrollbar { display: none; }
-            .filter-btn { flex: 0 0 auto; min-height: 46px; scroll-snap-align: start; }
+            .icon-btn {
+                width: 44px;
+                height: 44px;
+                flex: 0 0 44px;
+                font-size: 1.05rem;
+            }
+
+            .filters {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+                margin: 28px auto;
+                padding: 0 16px;
+                overflow: visible;
+            }
+
+            .filter-btn {
+                width: 100%;
+                min-height: 48px;
+                padding: 10px 12px;
+                font-size: 0.92rem;
+            }
 
             .products-grid {
                 grid-template-columns: minmax(0, 1fr);
@@ -1136,6 +1230,18 @@
             }
 
             .product-image { height: auto; aspect-ratio: 4 / 3; }
+
+            .empty-state {
+                min-height: 260px;
+                padding: 36px 12px;
+            }
+
+            .empty-state-icon { font-size: 58px; }
+
+            .empty-state p {
+                max-width: 260px;
+                font-size: 1rem;
+            }
 
             .cart-sidebar {
                 width: 100%;
@@ -1152,9 +1258,34 @@
                 position: sticky;
                 top: 0;
                 z-index: 2;
+                padding: 14px 16px;
             }
 
-            .modal-body { padding: 24px 18px max(28px, env(safe-area-inset-bottom)); }
+            .modal-header h2 {
+                min-width: 0;
+                font-size: 1.15rem;
+                line-height: 1.25;
+            }
+
+            .modal-body { padding: 20px 16px max(28px, env(safe-area-inset-bottom)); }
+
+            #adminModal .modal-body {
+                padding: 18px 16px max(28px, env(safe-area-inset-bottom));
+            }
+
+            #adminModal .form-group { margin-bottom: 16px; }
+
+            #adminModal .btn-primary { min-height: 50px; }
+
+            #addProductForm > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+                gap: 0 !important;
+            }
+
+            .admin-section {
+                margin-top: 22px;
+                padding-top: 20px;
+            }
 
             .toast-container {
                 top: auto;
@@ -1191,14 +1322,15 @@
         }
 
         @media (max-width: 420px) {
-            .language-switcher { transform: scale(0.9); transform-origin: top right; }
-            .admin-access { top: 14px; left: 10px; }
-            .admin-access-btn { min-height: 42px; }
+            .language-switcher { transform: scale(0.92); transform-origin: bottom right; }
+            .admin-access { left: 10px; }
+            .admin-access-btn { max-width: 128px; font-size: 0.75rem; }
             .nav-icons .icon-btn { width: 44px; height: 44px; }
-            #addProductForm > div[style*="grid-template-columns"] {
-                grid-template-columns: 1fr !important;
-                gap: 0 !important;
-            }
+            .logo > span:first-child { display: none; }
+            .logo { font-size: 1.05rem; }
+            .user-btn { width: 44px; min-width: 44px; padding: 0; border-radius: 50%; }
+            #userNameDisplay { display: none; }
+            .user-btn::after { content: '👤'; font-size: 1rem; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1892,7 +2024,7 @@
             const filtered = category === 'all' ? products : products.filter(p => p.category === category);
             
             if (filtered.length === 0) {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-secondary);"><div style="font-size: 80px; margin-bottom: 20px;">🛍️</div><p>${t('noProductsFound')}</p></div>`;
+                grid.innerHTML = `<div class="empty-state"><div><div class="empty-state-icon">🛍️</div><p>${t('noProductsFound')}</p></div></div>`;
                 return;
             }
             
