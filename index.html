@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sabina Style - Your Fashion Destination</title>
+    <title>Sabina Style — zamonaviy kiyimlar</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -766,6 +766,172 @@
             font-weight: 600;
         }
 
+        .language-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 11000;
+            display: flex;
+            gap: 4px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(190, 24, 93, 0.16);
+            border-radius: 999px;
+            box-shadow: 0 8px 24px rgba(44, 62, 80, 0.12);
+            backdrop-filter: blur(12px);
+        }
+
+        .language-btn {
+            min-width: 48px;
+            min-height: 44px;
+            padding: 8px 12px;
+            border: 0;
+            border-radius: 999px;
+            background: transparent;
+            color: #475569;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .language-btn.active {
+            background: #BE185D;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(190, 24, 93, 0.28);
+        }
+
+        .language-btn:focus-visible,
+        .delete-product-btn:focus-visible {
+            outline: 3px solid rgba(217, 119, 6, 0.35);
+            outline-offset: 2px;
+        }
+
+        #adminModal .modal {
+            border: 1px solid #F7E3EB;
+            box-shadow: 0 24px 70px rgba(131, 24, 67, 0.24);
+        }
+
+        #adminModal .modal-header {
+            background: linear-gradient(135deg, #9D174D, #BE185D 55%, #D97706);
+        }
+
+        #adminModal .modal-body {
+            background: #FFF8FB;
+        }
+
+        #adminModal .btn-primary {
+            background: linear-gradient(135deg, #BE185D, #EC4899);
+            box-shadow: 0 5px 16px rgba(190, 24, 93, 0.24);
+        }
+
+        .admin-section {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid #F3D5E2;
+        }
+
+        .admin-product-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .admin-product-item {
+            display: grid;
+            grid-template-columns: 56px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #FFFFFF;
+            border: 1px solid #F7E3EB;
+            border-radius: 14px;
+        }
+
+        .admin-product-item img {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #FDF2F8;
+        }
+
+        .admin-product-name {
+            overflow: hidden;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .admin-product-price {
+            color: #64748B;
+            font-size: 0.9rem;
+        }
+
+        .delete-product-btn {
+            min-height: 44px;
+            padding: 10px 14px;
+            border: 0;
+            border-radius: 10px;
+            background: #DC2626;
+            color: #FFFFFF;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .delete-product-btn:hover { background: #B91C1C; }
+
+        .admin-empty {
+            padding: 20px;
+            border: 1px dashed #E9A8C3;
+            border-radius: 14px;
+            color: #64748B;
+            text-align: center;
+        }
+
+        .file-input-native {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+        }
+
+        .file-upload-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 52px;
+            padding: 8px;
+            border: 2px dashed #E9A8C3;
+            border-radius: 12px;
+            background: #FFFFFF;
+        }
+
+        .file-upload-button {
+            display: inline-flex;
+            align-items: center;
+            min-height: 40px;
+            padding: 8px 14px;
+            border-radius: 9px;
+            background: #FCE7F3;
+            color: #9D174D;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .file-upload-name {
+            min-width: 0;
+            overflow: hidden;
+            color: #64748B;
+            font-size: 0.9rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -813,76 +979,95 @@
                 width: 100%;
                 right: -100%;
             }
+
+            .language-switcher {
+                top: 10px;
+                right: 10px;
+            }
+
+            .admin-product-item {
+                grid-template-columns: 48px minmax(0, 1fr);
+            }
+
+            .delete-product-btn {
+                grid-column: 1 / -1;
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
 
+    <div class="language-switcher" role="group" aria-label="Til / Язык">
+        <button class="language-btn active" type="button" data-lang="uz" onclick="setLanguage('uz')" aria-pressed="true">UZ</button>
+        <button class="language-btn" type="button" data-lang="ru" onclick="setLanguage('ru')" aria-pressed="false">RU</button>
+    </div>
+
     <!-- Registration/Login Overlay -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-container">
             <div class="auth-visual">
-                <h2>Welcome to Sabina Style</h2>
-                <p>Your Fashion Destination - Quality & Modern Clothing Across Uzbekistan</p>
+                <h2 data-i18n="welcomeTitle">Sabina Style'ga xush kelibsiz</h2>
+                <p data-i18n="welcomeSubtitle">O‘zbekiston bo‘ylab sifatli va zamonaviy kiyimlar</p>
                 <div style="font-size: 100px; margin-top: 30px; opacity: 0.3;">👗</div>
             </div>
             <div class="auth-form-container">
                 <div class="auth-tabs">
-                    <button class="auth-tab active" onclick="switchAuthTab('register')">Register</button>
-                    <button class="auth-tab" onclick="switchAuthTab('login')">Login</button>
+                    <button class="auth-tab active" onclick="switchAuthTab('register')" data-i18n="register">Ro‘yxatdan o‘tish</button>
+                    <button class="auth-tab" onclick="switchAuthTab('login')" data-i18n="login">Kirish</button>
                 </div>
 
                 <!-- Register Form -->
                 <form class="auth-form active" id="registerForm" onsubmit="handleRegister(event)">
                     <div class="form-group">
-                        <label>Full Name *</label>
-                        <input type="text" id="regName" required placeholder="Enter your full name">
+                        <label data-i18n="fullName">To‘liq ism *</label>
+                        <input type="text" id="regName" required data-i18n-placeholder="fullNamePlaceholder" placeholder="To‘liq ismingizni kiriting">
                     </div>
                     <div class="form-group">
-                        <label>Phone Number *</label>
+                        <label data-i18n="phoneNumber">Telefon raqami *</label>
                         <div class="phone-input-wrapper">
                             <span class="phone-prefix">+998</span>
-                            <input type="tel" id="regPhone" required placeholder="90 123 45 67" pattern="[0-9]{9}">
+                            <input type="tel" id="regPhone" required placeholder="90 123 45 67" inputmode="numeric" maxlength="12" autocomplete="tel-national">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Email Address *</label>
+                        <label data-i18n="emailAddress">Elektron pochta *</label>
                         <input type="email" id="regEmail" required placeholder="your@email.com">
                     </div>
                     <div class="form-group">
-                        <label>Password *</label>
-                        <input type="password" id="regPassword" required minlength="6" placeholder="Min 6 characters">
+                        <label data-i18n="password">Parol *</label>
+                        <input type="password" id="regPassword" required minlength="6" data-i18n-placeholder="passwordPlaceholder" placeholder="Kamida 6 ta belgi">
                     </div>
                     <div class="form-group">
-                        <label>Confirm Password *</label>
-                        <input type="password" id="regConfirmPassword" required minlength="6" placeholder="Re-enter password">
-                        <div class="error-message" id="passwordMatchError">Passwords do not match</div>
+                        <label data-i18n="confirmPassword">Parolni tasdiqlang *</label>
+                        <input type="password" id="regConfirmPassword" required minlength="6" data-i18n-placeholder="confirmPasswordPlaceholder" placeholder="Parolni qayta kiriting">
+                        <div class="error-message" id="passwordMatchError" data-i18n="passwordMismatch">Parollar mos kelmadi</div>
                     </div>
                     <div class="form-group">
-                        <label>Delivery Address *</label>
-                        <textarea id="regAddress" required rows="3" placeholder="Enter your delivery address"></textarea>
+                        <label data-i18n="deliveryAddressRequired">Yetkazib berish manzili *</label>
+                        <textarea id="regAddress" required rows="3" data-i18n-placeholder="addressPlaceholder" placeholder="Yetkazib berish manzilini kiriting"></textarea>
                     </div>
                     <div class="checkbox-group">
                         <input type="checkbox" id="regTerms" required>
-                        <label for="regTerms">I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a> *</label>
+                        <label for="regTerms" data-i18n="termsAgreement">Foydalanish shartlari va maxfiylik siyosatiga roziman *</label>
                     </div>
-                    <button type="submit" class="btn-primary">Create Account</button>
+                    <button type="submit" class="btn-primary" data-i18n="createAccount">Hisob yaratish</button>
                 </form>
 
                 <!-- Login Form -->
                 <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
                     <div class="form-group">
-                        <label>Email or Phone *</label>
-                        <input type="text" id="loginEmail" required placeholder="Enter your email or phone">
+                        <label data-i18n="emailOrPhone">Email yoki telefon *</label>
+                        <input type="text" id="loginEmail" required data-i18n-placeholder="emailOrPhonePlaceholder" placeholder="Email yoki telefonni kiriting">
                     </div>
                     <div class="form-group">
-                        <label>Password *</label>
-                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                        <label data-i18n="password">Parol *</label>
+                        <input type="password" id="loginPassword" required data-i18n-placeholder="enterPassword" placeholder="Parolingizni kiriting">
                     </div>
                     <div style="text-align: right; margin-bottom: 20px;">
-                        <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">Forgot password?</a>
+                        <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;" data-i18n="forgotPassword">Parolni unutdingizmi?</a>
                     </div>
-                    <button type="submit" class="btn-primary">Login</button>
+                    <button type="submit" class="btn-primary" data-i18n="login">Kirish</button>
                 </form>
             </div>
         </div>
@@ -892,7 +1077,7 @@
     <div class="main-site" id="mainSite">
         <!-- Admin Access Button -->
         <div class="admin-access">
-            <button class="admin-access-btn" onclick="openAdminPanel()">For Admin</button>
+            <button class="admin-access-btn" onclick="openAdminPanel()" data-i18n="forAdmin">Administrator uchun</button>
         </div>
 
         <!-- Header -->
@@ -906,13 +1091,13 @@
                     <div class="user-menu">
                         <button class="user-btn" onclick="toggleUserDropdown()">
                             <span>👤</span>
-                            <span id="userNameDisplay">User</span>
+                            <span id="userNameDisplay" data-i18n="user">Foydalanuvchi</span>
                         </button>
                         <div class="user-dropdown" id="userDropdown">
-                            <div class="user-dropdown-item" onclick="openProfile()">👤 My Profile</div>
-                            <div class="user-dropdown-item" onclick="openOrders()">📦 My Orders</div>
-                            <div class="user-dropdown-item" onclick="openWishlist()">❤️ Wishlist</div>
-                            <div class="user-dropdown-item" onclick="logout()">🚪 Logout</div>
+                            <div class="user-dropdown-item" onclick="openProfile()" data-i18n="myProfile">👤 Mening profilim</div>
+                            <div class="user-dropdown-item" onclick="openOrders()" data-i18n="myOrders">📦 Buyurtmalarim</div>
+                            <div class="user-dropdown-item" onclick="openWishlist()" data-i18n="wishlist">❤️ Sevimlilar</div>
+                            <div class="user-dropdown-item" onclick="logout()" data-i18n="logout">🚪 Chiqish</div>
                         </div>
                     </div>
                     <button class="icon-btn" onclick="toggleWishlist()">
@@ -929,17 +1114,17 @@
 
         <!-- Hero Section -->
         <section class="hero">
-            <h1>Discover Your Style</h1>
-            <p>Modern & Quality Clothing Across Uzbekistan - Free Delivery!</p>
-            <button class="btn-cta" onclick="document.querySelector('.filters').scrollIntoView({behavior: 'smooth'})">Shop Now</button>
+            <h1 data-i18n="discoverStyle">O‘z uslubingizni kashf eting</h1>
+            <p data-i18n="heroSubtitle">O‘zbekiston bo‘ylab zamonaviy va sifatli kiyimlar — bepul yetkazib berish!</p>
+            <button class="btn-cta" onclick="document.querySelector('.filters').scrollIntoView({behavior: 'smooth'})" data-i18n="shopNow">Xarid qilish</button>
         </section>
 
         <!-- Filters -->
         <div class="filters">
-            <button class="filter-btn active" onclick="filterProducts('all')">All</button>
-            <button class="filter-btn" onclick="filterProducts('men')">Men 👔</button>
-            <button class="filter-btn" onclick="filterProducts('women')">Women 👗</button>
-            <button class="filter-btn" onclick="filterProducts('kids')">Kids 👶</button>
+            <button class="filter-btn active" onclick="filterProducts('all')" data-i18n="all">Barchasi</button>
+            <button class="filter-btn" onclick="filterProducts('men')" data-i18n="men">Erkaklar 👔</button>
+            <button class="filter-btn" onclick="filterProducts('women')" data-i18n="women">Ayollar 👗</button>
+            <button class="filter-btn" onclick="filterProducts('kids')" data-i18n="kids">Bolalar 👶</button>
         </div>
 
         <!-- Products Grid -->
@@ -951,21 +1136,21 @@
     <!-- Cart Sidebar -->
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-header">
-            <h2>🛒 Shopping Cart</h2>
+            <h2 data-i18n="shoppingCart">🛒 Savat</h2>
             <button class="close-cart" onclick="toggleCart()">×</button>
         </div>
         <div class="cart-items" id="cartItems">
             <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
                 <div style="font-size: 60px; margin-bottom: 20px;">🛒</div>
-                <p>Your cart is empty</p>
+                <p data-i18n="cartEmpty">Savatingiz bo‘sh</p>
             </div>
         </div>
         <div class="cart-footer">
             <div class="cart-total">
-                <span>Total:</span>
+                <span data-i18n="total">Jami:</span>
                 <span id="cartTotal">0 so'm</span>
             </div>
-            <button class="checkout-btn" onclick="openCheckout()">Proceed to Checkout</button>
+            <button class="checkout-btn" onclick="openCheckout()" data-i18n="proceedCheckout">Buyurtmani rasmiylashtirish</button>
         </div>
     </div>
 
@@ -973,32 +1158,32 @@
     <div class="modal-overlay" id="checkoutModal">
         <div class="modal">
             <div class="modal-header">
-                <h2>📦 Checkout</h2>
+                <h2 data-i18n="checkout">📦 Buyurtmani rasmiylashtirish</h2>
                 <button class="close-modal" onclick="closeModal('checkoutModal')">×</button>
             </div>
             <div class="modal-body">
                 <form onsubmit="submitOrder(event)">
                     <div class="form-group">
-                        <label>Your Name</label>
+                        <label data-i18n="yourName">Ismingiz</label>
                         <input type="text" id="checkoutName" required>
                     </div>
                     <div class="form-group">
-                        <label>Phone</label>
-                        <input type="tel" id="checkoutPhone" required>
+                        <label data-i18n="phone">Telefon</label>
+                        <input type="tel" id="checkoutPhone" required inputmode="numeric" maxlength="17" autocomplete="tel">
                     </div>
                     <div class="form-group">
-                        <label>Delivery Address</label>
+                        <label data-i18n="deliveryAddress">Yetkazib berish manzili</label>
                         <textarea id="checkoutAddress" required rows="3"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Delivery Location</label>
+                        <label data-i18n="deliveryLocation">Yetkazib berish hududi</label>
                         <select id="checkoutLocation">
-                            <option value="Tashkent">Tashkent</option>
-                            <option value="Sergeli">Sergeli</option>
-                            <option value="Regions">Regions</option>
+                            <option value="Tashkent" data-i18n="tashkent">Toshkent</option>
+                            <option value="Sergeli" data-i18n="sergeli">Sergeli</option>
+                            <option value="Regions" data-i18n="regions">Viloyatlar</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn-primary">Confirm Order</button>
+                    <button type="submit" class="btn-primary" data-i18n="confirmOrder">Buyurtmani tasdiqlash</button>
                 </form>
             </div>
         </div>
@@ -1008,63 +1193,71 @@
     <div class="modal-overlay" id="adminModal">
         <div class="modal">
             <div class="modal-header">
-                <h2>🔐 Admin Panel</h2>
+                <h2 data-i18n="adminPanel">🔐 Administrator paneli</h2>
                 <button class="close-modal" onclick="closeModal('adminModal')">×</button>
             </div>
             <div class="modal-body">
                 <div id="adminPasswordSection">
                     <div class="form-group">
-                        <label>Enter Admin Password</label>
-                        <input type="password" id="adminPassword" placeholder="Enter password">
+                        <label data-i18n="adminPassword">Administrator parolini kiriting</label>
+                        <input type="password" id="adminPassword" data-i18n-placeholder="enterPassword" placeholder="Parolni kiriting">
                     </div>
-                    <button class="btn-primary" onclick="checkAdminPassword()">Login</button>
+                    <button class="btn-primary" onclick="checkAdminPassword()" data-i18n="login">Kirish</button>
                 </div>
                 <div id="adminPanelSection" style="display:none;">
-                    <h3 style="margin-bottom: 20px;">Add New Product</h3>
+                    <h3 style="margin-bottom: 20px;" data-i18n="addNewProduct">Yangi mahsulot qo‘shish</h3>
                     <form id="addProductForm" onsubmit="addProduct(event)">
                         <div class="form-group">
-                            <label>Product Name *</label>
+                            <label data-i18n="productName">Mahsulot nomi *</label>
                             <input type="text" id="prodName" required>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div class="form-group">
-                                <label>Category *</label>
+                                <label data-i18n="category">Turkum *</label>
                                 <select id="prodCategory" required>
-                                    <option value="men">Men</option>
-                                    <option value="women">Women</option>
-                                    <option value="kids">Kids</option>
+                                    <option value="men" data-i18n="menPlain">Erkaklar</option>
+                                    <option value="women" data-i18n="womenPlain">Ayollar</option>
+                                    <option value="kids" data-i18n="kidsPlain">Bolalar</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Price (so'm) *</label>
+                                <label data-i18n="price">Narxi (so‘m) *</label>
                                 <input type="number" id="prodPrice" required>
                             </div>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div class="form-group">
-                                <label>Old Price</label>
+                                <label data-i18n="oldPrice">Eski narxi</label>
                                 <input type="number" id="prodOldPrice">
                             </div>
                             <div class="form-group">
-                                <label>Discount %</label>
+                                <label data-i18n="discount">Chegirma %</label>
                                 <input type="number" id="prodDiscount" min="0" max="100">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Image Upload</label>
-                            <input type="file" id="prodImage" accept="image/*" style="width: 100%; padding: 10px; border: 2px dashed var(--primary); border-radius: 10px;">
+                            <label data-i18n="imageUpload">Rasm yuklash</label>
+                            <input type="file" id="prodImage" class="file-input-native" accept="image/*">
+                            <div class="file-upload-control">
+                                <label class="file-upload-button" for="prodImage" data-i18n="chooseImage">Rasm tanlash</label>
+                                <span class="file-upload-name" id="productFileName" data-i18n="noFileChosen">Fayl tanlanmagan</span>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>Description</label>
+                            <label data-i18n="description">Tavsif</label>
                             <textarea id="prodDescription" rows="3"></textarea>
                         </div>
                         <div class="form-group">
-                            <label>Sizes (comma separated)</label>
+                            <label data-i18n="sizes">O‘lchamlar (vergul bilan)</label>
                             <input type="text" id="prodSizes" placeholder="S,M,L,XL" value="S,M,L,XL">
                         </div>
-                        <button type="submit" class="btn-primary">💾 Save Product</button>
+                        <button type="submit" class="btn-primary" data-i18n="saveProduct">💾 Mahsulotni saqlash</button>
                     </form>
-                    <button class="btn-primary" onclick="adminLogout()" style="margin-top: 20px; background: var(--error);">Logout</button>
+                    <section class="admin-section">
+                        <h3 data-i18n="manageProducts">Mahsulotlarni boshqarish</h3>
+                        <div class="admin-product-list" id="adminProductList"></div>
+                    </section>
+                    <button class="btn-primary" onclick="adminLogout()" style="margin-top: 20px; background: #475569;" data-i18n="logout">Chiqish</button>
                 </div>
             </div>
         </div>
@@ -1082,9 +1275,152 @@
         let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
         let orders = JSON.parse(localStorage.getItem('orders')) || [];
         let isAdmin = false;
+        let currentLanguage = localStorage.getItem('language') || 'uz';
+
+        const translations = {
+            uz: {
+                siteTitle: "Sabina Style — zamonaviy kiyimlar", user: "Foydalanuvchi",
+                welcomeTitle: "Sabina Style'ga xush kelibsiz",
+                welcomeSubtitle: "O‘zbekiston bo‘ylab sifatli va zamonaviy kiyimlar",
+                register: "Ro‘yxatdan o‘tish", login: "Kirish", fullName: "To‘liq ism *",
+                fullNamePlaceholder: "To‘liq ismingizni kiriting", phoneNumber: "Telefon raqami *",
+                emailAddress: "Elektron pochta *", password: "Parol *", passwordPlaceholder: "Kamida 6 ta belgi",
+                confirmPassword: "Parolni tasdiqlang *", confirmPasswordPlaceholder: "Parolni qayta kiriting",
+                passwordMismatch: "Parollar mos kelmadi", deliveryAddressRequired: "Yetkazib berish manzili *",
+                addressPlaceholder: "Yetkazib berish manzilini kiriting",
+                termsAgreement: "Foydalanish shartlari va maxfiylik siyosatiga roziman *",
+                createAccount: "Hisob yaratish", emailOrPhone: "Email yoki telefon *",
+                emailOrPhonePlaceholder: "Email yoki telefonni kiriting", enterPassword: "Parolingizni kiriting",
+                forgotPassword: "Parolni unutdingizmi?", forAdmin: "Administrator uchun",
+                myProfile: "👤 Mening profilim", myOrders: "📦 Buyurtmalarim", wishlist: "❤️ Sevimlilar",
+                logout: "🚪 Chiqish", discoverStyle: "O‘z uslubingizni kashf eting",
+                heroSubtitle: "O‘zbekiston bo‘ylab zamonaviy va sifatli kiyimlar — bepul yetkazib berish!",
+                shopNow: "Xarid qilish", all: "Barchasi", men: "Erkaklar 👔", women: "Ayollar 👗",
+                kids: "Bolalar 👶", menPlain: "Erkaklar", womenPlain: "Ayollar", kidsPlain: "Bolalar",
+                shoppingCart: "🛒 Savat", cartEmpty: "Savatingiz bo‘sh", total: "Jami:",
+                proceedCheckout: "Buyurtmani rasmiylashtirish", checkout: "📦 Buyurtmani rasmiylashtirish",
+                yourName: "Ismingiz", phone: "Telefon", deliveryAddress: "Yetkazib berish manzili",
+                deliveryLocation: "Yetkazib berish hududi", tashkent: "Toshkent", sergeli: "Sergeli",
+                regions: "Viloyatlar", confirmOrder: "Buyurtmani tasdiqlash", adminPanel: "🔐 Administrator paneli",
+                adminPassword: "Administrator parolini kiriting", addNewProduct: "Yangi mahsulot qo‘shish",
+                productName: "Mahsulot nomi *", category: "Turkum *", price: "Narxi (so‘m) *",
+                oldPrice: "Eski narxi", discount: "Chegirma %", imageUpload: "Rasm yuklash",
+                description: "Tavsif", sizes: "O‘lchamlar (vergul bilan)", chooseImage: "Rasm tanlash",
+                noFileChosen: "Fayl tanlanmagan", saveProduct: "💾 Mahsulotni saqlash",
+                manageProducts: "Mahsulotlarni boshqarish", delete: "O‘chirish", noProducts: "Hozircha mahsulotlar yo‘q",
+                noProductsFound: "Mahsulotlar topilmadi", addToCart: "Savatga qo‘shish", size: "O‘lcham",
+                userExists: "Bunday foydalanuvchi mavjud", invalidPhone: "Telefon raqamini 90 123 45 67 formatida kiriting",
+                registrationSuccess: "Ro‘yxatdan o‘tish muvaffaqiyatli",
+                invalidCredentials: "Email, telefon yoki parol noto‘g‘ri", welcomeBack: "Xush kelibsiz!",
+                addedToCart: "Savatga qo‘shildi", removedFromCart: "Savatdan olib tashlandi",
+                wishlistItems: "Sevimlilar: {count} ta", cartIsEmpty: "Savatingiz bo‘sh!",
+                orderSuccess: "Buyurtma muvaffaqiyatli yuborildi", adminGranted: "Administratorga kirish ochildi",
+                wrongPassword: "Parol noto‘g‘ri", productAdded: "Mahsulot qo‘shildi",
+                productDeleted: "Mahsulot o‘chirildi", confirmDelete: "“{name}” mahsulotini o‘chirmoqchimisiz?",
+                noOrders: "Hozircha buyurtmalar yo‘q", profile: "Profil", name: "Ism", email: "Email",
+                address: "Manzil", ordersTitle: "Buyurtmalaringiz", order: "Buyurtma", status: "Holat",
+                date: "Sana", newStatus: "Yangi", orderConfirmed: "Buyurtma tasdiqlandi!", contactSoon: "Tez orada siz bilan bog‘lanamiz!"
+            },
+            ru: {
+                siteTitle: "Sabina Style — современная одежда", user: "Пользователь",
+                welcomeTitle: "Добро пожаловать в Sabina Style",
+                welcomeSubtitle: "Качественная и современная одежда по всему Узбекистану",
+                register: "Регистрация", login: "Войти", fullName: "Полное имя *",
+                fullNamePlaceholder: "Введите полное имя", phoneNumber: "Номер телефона *",
+                emailAddress: "Электронная почта *", password: "Пароль *", passwordPlaceholder: "Минимум 6 символов",
+                confirmPassword: "Подтвердите пароль *", confirmPasswordPlaceholder: "Введите пароль повторно",
+                passwordMismatch: "Пароли не совпадают", deliveryAddressRequired: "Адрес доставки *",
+                addressPlaceholder: "Введите адрес доставки",
+                termsAgreement: "Я принимаю условия использования и политику конфиденциальности *",
+                createAccount: "Создать аккаунт", emailOrPhone: "Email или телефон *",
+                emailOrPhonePlaceholder: "Введите email или телефон", enterPassword: "Введите пароль",
+                forgotPassword: "Забыли пароль?", forAdmin: "Для администратора",
+                myProfile: "👤 Мой профиль", myOrders: "📦 Мои заказы", wishlist: "❤️ Избранное",
+                logout: "🚪 Выйти", discoverStyle: "Откройте свой стиль",
+                heroSubtitle: "Современная качественная одежда по Узбекистану — доставка бесплатно!",
+                shopNow: "Перейти к покупкам", all: "Все", men: "Мужчинам 👔", women: "Женщинам 👗",
+                kids: "Детям 👶", menPlain: "Мужчинам", womenPlain: "Женщинам", kidsPlain: "Детям",
+                shoppingCart: "🛒 Корзина", cartEmpty: "Корзина пуста", total: "Итого:",
+                proceedCheckout: "Оформить заказ", checkout: "📦 Оформление заказа",
+                yourName: "Ваше имя", phone: "Телефон", deliveryAddress: "Адрес доставки",
+                deliveryLocation: "Регион доставки", tashkent: "Ташкент", sergeli: "Сергели",
+                regions: "Области", confirmOrder: "Подтвердить заказ", adminPanel: "🔐 Панель администратора",
+                adminPassword: "Введите пароль администратора", addNewProduct: "Добавить товар",
+                productName: "Название товара *", category: "Категория *", price: "Цена (сум) *",
+                oldPrice: "Старая цена", discount: "Скидка %", imageUpload: "Загрузить изображение",
+                description: "Описание", sizes: "Размеры (через запятую)", chooseImage: "Выбрать изображение",
+                noFileChosen: "Файл не выбран", saveProduct: "💾 Сохранить товар",
+                manageProducts: "Управление товарами", delete: "Удалить", noProducts: "Товаров пока нет",
+                noProductsFound: "Товары не найдены", addToCart: "Добавить в корзину", size: "Размер",
+                userExists: "Такой пользователь уже существует", invalidPhone: "Введите номер в формате 90 123 45 67",
+                registrationSuccess: "Регистрация прошла успешно",
+                invalidCredentials: "Неверный email, телефон или пароль", welcomeBack: "С возвращением!",
+                addedToCart: "Добавлено в корзину", removedFromCart: "Удалено из корзины",
+                wishlistItems: "В избранном: {count}", cartIsEmpty: "Корзина пуста!",
+                orderSuccess: "Заказ успешно оформлен", adminGranted: "Доступ администратора открыт",
+                wrongPassword: "Неверный пароль", productAdded: "Товар добавлен",
+                productDeleted: "Товар удалён", confirmDelete: "Удалить товар «{name}»?",
+                noOrders: "Заказов пока нет", profile: "Профиль", name: "Имя", email: "Email",
+                address: "Адрес", ordersTitle: "Ваши заказы", order: "Заказ", status: "Статус",
+                date: "Дата", newStatus: "Новый", orderConfirmed: "Заказ подтверждён!", contactSoon: "Мы скоро свяжемся с вами!"
+            }
+        };
+
+        function t(key, replacements = {}) {
+            let value = translations[currentLanguage][key] || translations.uz[key] || key;
+            Object.entries(replacements).forEach(([name, replacement]) => {
+                value = value.replace(`{${name}}`, replacement);
+            });
+            return value;
+        }
+
+        function setLanguage(language) {
+            currentLanguage = language;
+            localStorage.setItem('language', language);
+            document.documentElement.lang = language;
+            document.title = t('siteTitle');
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                element.textContent = t(element.dataset.i18n);
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                element.placeholder = t(element.dataset.i18nPlaceholder);
+            });
+            document.querySelectorAll('.language-btn').forEach(button => {
+                const isActive = button.dataset.lang === language;
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-pressed', String(isActive));
+            });
+            renderProducts();
+            updateCart();
+            if (isAdmin) renderAdminProducts();
+        }
+
+        function formatUzbekPhone(value, includePrefix = false) {
+            let digits = value.replace(/\D/g, '');
+            if (digits.startsWith('998')) digits = digits.slice(3);
+            digits = digits.slice(0, 9);
+            const groups = [digits.slice(0, 2), digits.slice(2, 5), digits.slice(5, 7), digits.slice(7, 9)].filter(Boolean);
+            return `${includePrefix ? '+998 ' : ''}${groups.join(' ')}`.trim();
+        }
+
+        function setupPhoneFormatting() {
+            const registrationPhone = document.getElementById('regPhone');
+            const checkoutPhone = document.getElementById('checkoutPhone');
+            registrationPhone.addEventListener('input', () => {
+                registrationPhone.value = formatUzbekPhone(registrationPhone.value);
+            });
+            checkoutPhone.addEventListener('input', () => {
+                checkoutPhone.value = formatUzbekPhone(checkoutPhone.value, true);
+            });
+            document.getElementById('prodImage').addEventListener('change', event => {
+                document.getElementById('productFileName').textContent = event.target.files[0]?.name || t('noFileChosen');
+            });
+        }
 
         // Check if user is logged in
         window.onload = function() {
+            setupPhoneFormatting();
+            setLanguage(currentLanguage);
             if (currentUser) {
                 showMainSite();
             }
@@ -1114,11 +1450,18 @@
                 document.getElementById('passwordMatchError').classList.add('show');
                 return;
             }
+
+            const phoneDigits = document.getElementById('regPhone').value.replace(/\D/g, '');
+            if (phoneDigits.length !== 9) {
+                showToast(t('invalidPhone'), 'error');
+                document.getElementById('regPhone').focus();
+                return;
+            }
             
             const user = {
                 id: Date.now(),
                 name: document.getElementById('regName').value,
-                phone: '+998' + document.getElementById('regPhone').value.replace(/\s/g, ''),
+                phone: formatUzbekPhone(phoneDigits, true),
                 email: document.getElementById('regEmail').value,
                 password: btoa(password),
                 address: document.getElementById('regAddress').value,
@@ -1127,7 +1470,7 @@
             };
             
             if (users.find(u => u.email === user.email || u.phone === user.phone)) {
-                showToast('User already exists!', 'error');
+                showToast(t('userExists'), 'error');
                 return;
             }
             
@@ -1136,7 +1479,7 @@
             localStorage.setItem('currentUser', JSON.stringify(user));
             currentUser = user;
             
-            showToast('Registration successful!', 'success');
+            showToast(t('registrationSuccess'), 'success');
             setTimeout(() => {
                 showMainSite();
             }, 1000);
@@ -1145,22 +1488,23 @@
         function handleLogin(e) {
             e.preventDefault();
             
-            const emailOrPhone = document.getElementById('loginEmail').value;
+            const emailOrPhone = document.getElementById('loginEmail').value.trim();
+            const normalizedPhone = formatUzbekPhone(emailOrPhone, true);
             const password = btoa(document.getElementById('loginPassword').value);
             
             const user = users.find(u => 
-                (u.email === emailOrPhone || u.phone === emailOrPhone) && u.password === password
+                (u.email === emailOrPhone || u.phone === emailOrPhone || formatUzbekPhone(u.phone, true) === normalizedPhone) && u.password === password
             );
             
             if (!user) {
-                showToast('Invalid credentials!', 'error');
+                showToast(t('invalidCredentials'), 'error');
                 return;
             }
             
             localStorage.setItem('currentUser', JSON.stringify(user));
             currentUser = user;
             
-            showToast('Welcome back!', 'success');
+            showToast(t('welcomeBack'), 'success');
             setTimeout(() => {
                 showMainSite();
             }, 1000);
@@ -1190,7 +1534,7 @@
             const filtered = category === 'all' ? products : products.filter(p => p.category === category);
             
             if (filtered.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-secondary);"><div style="font-size: 80px; margin-bottom: 20px;">🛍️</div><p>No products found</p></div>';
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-secondary);"><div style="font-size: 80px; margin-bottom: 20px;">🛍️</div><p>${t('noProductsFound')}</p></div>`;
                 return;
             }
             
@@ -1206,7 +1550,7 @@
                         <div class="size-selector" id="sizes-${product.id}">
                             ${product.sizes.map(s => `<button class="size-btn" onclick="selectSize(this)">${s}</button>`).join('')}
                         </div>
-                        <button class="add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                        <button class="add-to-cart" onclick="addToCart(${product.id})">${t('addToCart')}</button>
                     </div>
                 </div>
             `).join('');
@@ -1245,7 +1589,7 @@
             
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCart();
-            showToast('Added to cart!', 'success');
+            showToast(t('addedToCart'), 'success');
         }
 
         function updateCart() {
@@ -1258,7 +1602,7 @@
             badge.style.display = count > 0 ? 'flex' : 'none';
             
             if (cart.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);"><div style="font-size: 60px; margin-bottom: 20px;">🛒</div><p>Your cart is empty</p></div>';
+                container.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-secondary);"><div style="font-size: 60px; margin-bottom: 20px;">🛒</div><p>${t('cartEmpty')}</p></div>`;
                 totalEl.textContent = '0 so\'m';
                 return;
             }
@@ -1268,7 +1612,7 @@
                     <img src="${item.image || 'https://placehold.co/80x80/7EC8E3/ffffff?text=Item'}" alt="${item.name}" class="cart-item-image">
                     <div class="cart-item-details">
                         <div class="cart-item-title">${item.name}</div>
-                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Size: ${item.size}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">${t('size')}: ${item.size}</div>
                         <div class="cart-item-price">${formatPrice(item.price)} x ${item.quantity}</div>
                     </div>
                     <button class="cart-item-remove" onclick="removeFromCart(${index})">×</button>
@@ -1283,7 +1627,7 @@
             cart.splice(index, 1);
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCart();
-            showToast('Removed from cart', 'success');
+            showToast(t('removedFromCart'), 'success');
         }
 
         function toggleCart() {
@@ -1296,7 +1640,7 @@
             const count = wishlist.length;
             badge.textContent = count;
             badge.style.display = count > 0 ? 'flex' : 'none';
-            showToast(`Wishlist: ${count} items`, 'success');
+            showToast(t('wishlistItems', { count }), 'success');
         }
 
         function updateWishlist() {
@@ -1309,7 +1653,7 @@
         // Checkout
         function openCheckout() {
             if (cart.length === 0) {
-                showToast('Your cart is empty!', 'error');
+                showToast(t('cartIsEmpty'), 'error');
                 return;
             }
             toggleCart();
@@ -1341,17 +1685,18 @@
             
             closeModal('checkoutModal');
             updateCart();
-            showToast('Order placed successfully!', 'success');
+            showToast(t('orderSuccess'), 'success');
             createConfetti();
             
             setTimeout(() => {
-                alert(`✅ Order Confirmed!\n\nOrder #${order.id}\nTotal: ${formatPrice(order.total)}\n\nWe will contact you soon!`);
+                alert(`✅ ${t('orderConfirmed')}\n\n${t('order')} #${order.id}\n${t('total')} ${formatPrice(order.total)}\n\n${t('contactSoon')}`);
             }, 500);
         }
 
         // Admin Functions
         function openAdminPanel() {
             document.getElementById('adminModal').classList.add('active');
+            if (isAdmin) renderAdminProducts();
         }
 
         function checkAdminPassword() {
@@ -1360,9 +1705,10 @@
                 isAdmin = true;
                 document.getElementById('adminPasswordSection').style.display = 'none';
                 document.getElementById('adminPanelSection').style.display = 'block';
-                showToast('Admin access granted!', 'success');
+                renderAdminProducts();
+                showToast(t('adminGranted'), 'success');
             } else {
-                showToast('Wrong password!', 'error');
+                showToast(t('wrongPassword'), 'error');
             }
         }
 
@@ -1405,9 +1751,46 @@
         function saveProduct(product) {
             products.push(product);
             localStorage.setItem('products', JSON.stringify(products));
-            showToast('Product added!', 'success');
+            showToast(t('productAdded'), 'success');
             document.getElementById('addProductForm').reset();
+            document.getElementById('productFileName').textContent = t('noFileChosen');
             renderProducts();
+            renderAdminProducts();
+        }
+
+        function renderAdminProducts() {
+            const container = document.getElementById('adminProductList');
+            if (!container) return;
+            if (products.length === 0) {
+                container.innerHTML = `<div class="admin-empty">${t('noProducts')}</div>`;
+                return;
+            }
+            container.innerHTML = products.map(product => `
+                <article class="admin-product-item">
+                    <img src="${product.image || 'https://placehold.co/80x80/FDF2F8/BE185D?text=Item'}" alt="${product.name}">
+                    <div>
+                        <div class="admin-product-name">${product.name}</div>
+                        <div class="admin-product-price">${formatPrice(product.price)}</div>
+                    </div>
+                    <button type="button" class="delete-product-btn" onclick="deleteProduct(${product.id})">${t('delete')}</button>
+                </article>
+            `).join('');
+        }
+
+        function deleteProduct(productId) {
+            const product = products.find(item => item.id === productId);
+            if (!product || !confirm(t('confirmDelete', { name: product.name }))) return;
+            products = products.filter(item => item.id !== productId);
+            cart = cart.filter(item => item.id !== productId);
+            wishlist = wishlist.filter(item => item.id !== productId);
+            localStorage.setItem('products', JSON.stringify(products));
+            localStorage.setItem('cart', JSON.stringify(cart));
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            renderProducts();
+            updateCart();
+            updateWishlist();
+            renderAdminProducts();
+            showToast(t('productDeleted'), 'success');
         }
 
         // UI Functions
@@ -1416,22 +1799,22 @@
         }
 
         function openProfile() {
-            alert(`Profile:\n\nName: ${currentUser.name}\nPhone: ${currentUser.phone}\nEmail: ${currentUser.email}\nAddress: ${currentUser.address}`);
+            alert(`${t('profile')}:\n\n${t('name')}: ${currentUser.name}\n${t('phone')}: ${currentUser.phone}\n${t('email')}: ${currentUser.email}\n${t('address')}: ${currentUser.address}`);
             document.getElementById('userDropdown').classList.remove('show');
         }
 
         function openOrders() {
             const userOrders = orders.filter(o => o.userId === currentUser.id);
             if (userOrders.length === 0) {
-                showToast('No orders yet', 'error');
+                showToast(t('noOrders'), 'error');
             } else {
-                alert(`Your Orders:\n\n${userOrders.map(o => `Order #${o.id}\nTotal: ${formatPrice(o.total)}\nStatus: ${o.status}\nDate: ${new Date(o.date).toLocaleString()}`).join('\n\n')}`);
+                alert(`${t('ordersTitle')}:\n\n${userOrders.map(o => `${t('order')} #${o.id}\n${t('total')} ${formatPrice(o.total)}\n${t('status')}: ${o.status === 'New' ? t('newStatus') : o.status}\n${t('date')}: ${new Date(o.date).toLocaleString(currentLanguage === 'uz' ? 'uz-UZ' : 'ru-RU')}`).join('\n\n')}`);
             }
             document.getElementById('userDropdown').classList.remove('show');
         }
 
         function openWishlist() {
-            showToast(`Wishlist: ${wishlist.length} items`, 'success');
+            showToast(t('wishlistItems', { count: wishlist.length }), 'success');
             document.getElementById('userDropdown').classList.remove('show');
         }
 
