@@ -25,12 +25,53 @@
             --warning: #F39C12;
         }
 
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 88px;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: var(--background);
             color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
+            min-width: 320px;
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        body.modal-open,
+        body.panel-open {
+            overflow: hidden;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            touch-action: manipulation;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        :focus-visible {
+            outline: 3px solid rgba(190, 24, 93, 0.34);
+            outline-offset: 3px;
+        }
+
+        .scroll-progress {
+            position: fixed;
+            inset: 0 0 auto;
+            z-index: 12000;
+            height: 3px;
+            background: linear-gradient(90deg, #BE185D, #EC4899, #D97706);
+            transform: scaleX(0);
+            transform-origin: left center;
+            pointer-events: none;
         }
 
         /* Registration Overlay */
@@ -47,6 +88,10 @@
             justify-content: center;
             padding: 20px;
             animation: fadeIn 0.5s ease;
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
         }
 
         .auth-container {
@@ -59,6 +104,7 @@
             grid-template-columns: 1fr 1fr;
             overflow: hidden;
             min-height: 600px;
+            margin: auto;
         }
 
         .auth-visual {
@@ -380,7 +426,26 @@
             padding: 80px 20px;
             text-align: center;
             color: white;
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
         }
+
+        .hero::before,
+        .hero::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            width: 280px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.14);
+            filter: blur(2px);
+            pointer-events: none;
+        }
+
+        .hero::before { top: -160px; left: -80px; }
+        .hero::after { right: -100px; bottom: -190px; }
 
         .hero h1 {
             font-size: 3rem;
@@ -456,7 +521,8 @@
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s;
+            transition: transform 0.28s ease, box-shadow 0.28s ease;
+            transform: translateZ(0);
         }
 
         .product-card:hover {
@@ -545,17 +611,20 @@
             top: 0;
             width: 450px;
             max-width: 100%;
-            height: 100vh;
+            height: 100dvh;
             background: white;
             box-shadow: -5px 0 30px rgba(0,0,0,0.15);
             z-index: 2000;
-            transition: right 0.4s ease;
+            transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
             display: flex;
             flex-direction: column;
+            transform: translateX(100%);
+            right: 0;
+            overscroll-behavior: contain;
         }
 
         .cart-sidebar.open {
-            right: 0;
+            transform: translateX(0);
         }
 
         .cart-header {
@@ -575,8 +644,8 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             cursor: pointer;
             font-size: 1.5rem;
@@ -586,6 +655,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .cart-item {
@@ -622,14 +692,16 @@
             background: var(--error);
             color: white;
             border: none;
-            width: 30px;
-            height: 30px;
+            width: 44px;
+            height: 44px;
+            flex: 0 0 44px;
             border-radius: 50%;
             cursor: pointer;
         }
 
         .cart-footer {
             padding: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
             border-top: 2px solid var(--background);
         }
 
@@ -668,6 +740,9 @@
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(5px);
+            padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+            overflow-y: auto;
+            overscroll-behavior: contain;
         }
 
         .modal-overlay.active {
@@ -679,9 +754,11 @@
             border-radius: 20px;
             max-width: 600px;
             width: 90%;
-            max-height: 90vh;
+            max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
             overflow-y: auto;
-            animation: slideUp 0.4s ease;
+            animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
         }
 
         .modal-header {
@@ -705,8 +782,8 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            width: 35px;
-            height: 35px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             cursor: pointer;
             font-size: 1.2rem;
@@ -779,7 +856,22 @@
             border-radius: 999px;
             box-shadow: 0 8px 24px rgba(44, 62, 80, 0.12);
             backdrop-filter: blur(12px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
+
+        body.main-active .language-switcher {
+            top: auto;
+            bottom: max(20px, env(safe-area-inset-bottom));
+        }
+
+        body.modal-open .language-switcher,
+        body.panel-open .language-switcher {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(8px);
+        }
+
+        body.gsap-ready .modal { animation: none; }
 
         .language-btn {
             min-width: 48px;
@@ -955,12 +1047,23 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            .auth-overlay {
+                align-items: flex-start;
+                padding: 72px 12px max(20px, env(safe-area-inset-bottom));
+            }
+
             .auth-container {
                 grid-template-columns: 1fr;
+                min-height: 0;
+                margin: 0;
+                border-radius: 22px;
+                overflow: visible;
             }
 
             .auth-visual {
-                padding: 40px 20px;
+                min-height: 190px;
+                padding: 32px 20px;
+                border-radius: 22px 22px 0 0;
             }
 
             .auth-visual h2 {
@@ -968,21 +1071,113 @@
             }
 
             .auth-form-container {
-                padding: 40px 20px;
+                padding: 32px 20px 36px;
+            }
+
+            .auth-tabs {
+                gap: 8px;
+                margin-bottom: 28px;
+            }
+
+            .auth-tab {
+                flex: 1;
+                min-height: 48px;
+                padding: 12px 8px;
+                font-size: 0.98rem;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                min-height: 48px;
+                font-size: 16px;
             }
 
             .hero h1 {
-                font-size: 2rem;
+                font-size: clamp(2rem, 10vw, 3rem);
             }
+
+            .hero {
+                padding: 72px 18px 64px;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .header-content {
+                gap: 12px;
+                padding: 14px 12px;
+            }
+
+            .logo { font-size: 1.25rem; }
+            .nav-icons { gap: 8px; }
+            .user-btn { padding: 10px 12px; }
+            .user-btn > span:first-child { display: none; }
+
+            .filters {
+                justify-content: flex-start;
+                flex-wrap: nowrap;
+                gap: 10px;
+                margin: 28px auto;
+                padding: 4px 16px 10px;
+                overflow-x: auto;
+                scrollbar-width: none;
+                scroll-snap-type: x proximity;
+            }
+
+            .filters::-webkit-scrollbar { display: none; }
+            .filter-btn { flex: 0 0 auto; min-height: 46px; scroll-snap-align: start; }
+
+            .products-grid {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 20px;
+                padding: 0 16px 48px;
+            }
+
+            .product-image { height: auto; aspect-ratio: 4 / 3; }
 
             .cart-sidebar {
                 width: 100%;
-                right: -100%;
             }
+
+            .modal-overlay { align-items: flex-end; padding: 0; }
+            .modal {
+                width: 100%;
+                max-height: calc(100dvh - max(12px, env(safe-area-inset-top)));
+                border-radius: 24px 24px 0 0;
+            }
+
+            .modal-header {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+            }
+
+            .modal-body { padding: 24px 18px max(28px, env(safe-area-inset-bottom)); }
+
+            .toast-container {
+                top: auto;
+                right: 12px;
+                bottom: max(16px, env(safe-area-inset-bottom));
+                left: 12px;
+            }
+
+            body.main-active .toast-container {
+                bottom: calc(76px + env(safe-area-inset-bottom));
+            }
+
+            .toast { min-width: 0; width: 100%; }
 
             .language-switcher {
                 top: 10px;
                 right: 10px;
+            }
+
+            body.main-active .language-switcher {
+                top: auto;
+                right: 12px;
+                bottom: max(12px, env(safe-area-inset-bottom));
             }
 
             .admin-product-item {
@@ -994,9 +1189,33 @@
                 width: 100%;
             }
         }
+
+        @media (max-width: 420px) {
+            .language-switcher { transform: scale(0.9); transform-origin: top right; }
+            .admin-access { top: 14px; left: 10px; }
+            .admin-access-btn { min-height: 42px; }
+            .nav-icons .icon-btn { width: 44px; height: 44px; }
+            #addProductForm > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+                gap: 0 !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .scroll-progress { display: none; }
+        }
     </style>
 </head>
 <body>
+
+    <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
     <div class="language-switcher" role="group" aria-label="Til / Язык">
         <button class="language-btn active" type="button" data-lang="uz" onclick="setLanguage('uz')" aria-pressed="true">UZ</button>
@@ -1100,11 +1319,11 @@
                             <div class="user-dropdown-item" onclick="logout()" data-i18n="logout">🚪 Chiqish</div>
                         </div>
                     </div>
-                    <button class="icon-btn" onclick="toggleWishlist()">
+                    <button class="icon-btn" onclick="toggleWishlist()" aria-label="Sevimlilar" data-i18n-aria-label="wishlistLabel">
                         ❤️
                         <span class="badge" id="wishlistCount" style="display:none">0</span>
                     </button>
-                    <button class="icon-btn" onclick="toggleCart()">
+                    <button class="icon-btn" onclick="toggleCart()" aria-label="Savat" data-i18n-aria-label="cartLabel">
                         🛒
                         <span class="badge" id="cartCount" style="display:none">0</span>
                     </button>
@@ -1121,10 +1340,10 @@
 
         <!-- Filters -->
         <div class="filters">
-            <button class="filter-btn active" onclick="filterProducts('all')" data-i18n="all">Barchasi</button>
-            <button class="filter-btn" onclick="filterProducts('men')" data-i18n="men">Erkaklar 👔</button>
-            <button class="filter-btn" onclick="filterProducts('women')" data-i18n="women">Ayollar 👗</button>
-            <button class="filter-btn" onclick="filterProducts('kids')" data-i18n="kids">Bolalar 👶</button>
+            <button class="filter-btn active" onclick="filterProducts('all', this)" data-i18n="all">Barchasi</button>
+            <button class="filter-btn" onclick="filterProducts('men', this)" data-i18n="men">Erkaklar 👔</button>
+            <button class="filter-btn" onclick="filterProducts('women', this)" data-i18n="women">Ayollar 👗</button>
+            <button class="filter-btn" onclick="filterProducts('kids', this)" data-i18n="kids">Bolalar 👶</button>
         </div>
 
         <!-- Products Grid -->
@@ -1137,7 +1356,7 @@
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-header">
             <h2 data-i18n="shoppingCart">🛒 Savat</h2>
-            <button class="close-cart" onclick="toggleCart()">×</button>
+            <button class="close-cart" onclick="toggleCart()" aria-label="Yopish" data-i18n-aria-label="closeLabel">×</button>
         </div>
         <div class="cart-items" id="cartItems">
             <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
@@ -1159,7 +1378,7 @@
         <div class="modal">
             <div class="modal-header">
                 <h2 data-i18n="checkout">📦 Buyurtmani rasmiylashtirish</h2>
-                <button class="close-modal" onclick="closeModal('checkoutModal')">×</button>
+                <button class="close-modal" onclick="closeModal('checkoutModal')" aria-label="Yopish" data-i18n-aria-label="closeLabel">×</button>
             </div>
             <div class="modal-body">
                 <form onsubmit="submitOrder(event)">
@@ -1194,7 +1413,7 @@
         <div class="modal">
             <div class="modal-header">
                 <h2 data-i18n="adminPanel">🔐 Administrator paneli</h2>
-                <button class="close-modal" onclick="closeModal('adminModal')">×</button>
+                <button class="close-modal" onclick="closeModal('adminModal')" aria-label="Yopish" data-i18n-aria-label="closeLabel">×</button>
             </div>
             <div class="modal-body">
                 <div id="adminPasswordSection">
@@ -1264,8 +1483,10 @@
     </div>
 
     <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js"></script>
     <script>
         // Data Storage
         let users = JSON.parse(localStorage.getItem('users')) || [];
@@ -1276,6 +1497,8 @@
         let orders = JSON.parse(localStorage.getItem('orders')) || [];
         let isAdmin = false;
         let currentLanguage = localStorage.getItem('language') || 'uz';
+        let currentCategory = 'all';
+        let productCardsTween = null;
 
         const translations = {
             uz: {
@@ -1293,6 +1516,7 @@
                 emailOrPhonePlaceholder: "Email yoki telefonni kiriting", enterPassword: "Parolingizni kiriting",
                 forgotPassword: "Parolni unutdingizmi?", forAdmin: "Administrator uchun",
                 myProfile: "👤 Mening profilim", myOrders: "📦 Buyurtmalarim", wishlist: "❤️ Sevimlilar",
+                closeLabel: "Yopish", wishlistLabel: "Sevimlilar", cartLabel: "Savat",
                 logout: "🚪 Chiqish", discoverStyle: "O‘z uslubingizni kashf eting",
                 heroSubtitle: "O‘zbekiston bo‘ylab zamonaviy va sifatli kiyimlar — bepul yetkazib berish!",
                 shopNow: "Xarid qilish", all: "Barchasi", men: "Erkaklar 👔", women: "Ayollar 👗",
@@ -1336,6 +1560,7 @@
                 emailOrPhonePlaceholder: "Введите email или телефон", enterPassword: "Введите пароль",
                 forgotPassword: "Забыли пароль?", forAdmin: "Для администратора",
                 myProfile: "👤 Мой профиль", myOrders: "📦 Мои заказы", wishlist: "❤️ Избранное",
+                closeLabel: "Закрыть", wishlistLabel: "Избранное", cartLabel: "Корзина",
                 logout: "🚪 Выйти", discoverStyle: "Откройте свой стиль",
                 heroSubtitle: "Современная качественная одежда по Узбекистану — доставка бесплатно!",
                 shopNow: "Перейти к покупкам", all: "Все", men: "Мужчинам 👔", women: "Женщинам 👗",
@@ -1385,12 +1610,15 @@
             document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
                 element.placeholder = t(element.dataset.i18nPlaceholder);
             });
+            document.querySelectorAll('[data-i18n-aria-label]').forEach(element => {
+                element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel));
+            });
             document.querySelectorAll('.language-btn').forEach(button => {
                 const isActive = button.dataset.lang === language;
                 button.classList.toggle('active', isActive);
                 button.setAttribute('aria-pressed', String(isActive));
             });
-            renderProducts();
+            renderProducts(currentCategory);
             updateCart();
             if (isAdmin) renderAdminProducts();
         }
@@ -1417,6 +1645,122 @@
             });
         }
 
+        function motionAllowed() {
+            return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
+        function initPremiumMotion() {
+            if (!window.gsap || !window.ScrollTrigger || !motionAllowed()) return;
+            gsap.registerPlugin(ScrollTrigger);
+            document.body.classList.add('gsap-ready');
+
+            gsap.to('#scrollProgress', {
+                scaleX: 1,
+                ease: 'none',
+                scrollTrigger: {
+                    id: 'page-progress',
+                    trigger: document.documentElement,
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    scrub: 0.2,
+                    invalidateOnRefresh: true
+                }
+            });
+
+            const authOverlay = document.getElementById('authOverlay');
+            authOverlay.addEventListener('scroll', () => {
+                if (authOverlay.style.display === 'none') return;
+                const distance = authOverlay.scrollHeight - authOverlay.clientHeight;
+                gsap.set('#scrollProgress', { scaleX: distance > 0 ? authOverlay.scrollTop / distance : 0 });
+            }, { passive: true });
+
+            gsap.from('.auth-container', {
+                opacity: 0,
+                y: 24,
+                scale: 0.985,
+                duration: 0.75,
+                ease: 'power3.out',
+                clearProps: 'transform'
+            });
+        }
+
+        function initMainSiteMotion() {
+            if (!window.gsap || !window.ScrollTrigger || !motionAllowed()) return;
+            gsap.registerPlugin(ScrollTrigger);
+            ScrollTrigger.getById('hero-parallax')?.kill();
+            ScrollTrigger.getById('filters-reveal')?.kill();
+
+            gsap.fromTo('.hero > *',
+                { opacity: 0, y: 28 },
+                { opacity: 1, y: 0, duration: 0.75, stagger: 0.1, ease: 'power3.out', clearProps: 'transform' }
+            );
+
+            gsap.fromTo('.filters',
+                { opacity: 0, y: 22 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.65,
+                    ease: 'power3.out',
+                    clearProps: 'transform',
+                    scrollTrigger: { id: 'filters-reveal', trigger: '.filters', start: 'top 90%', once: true }
+                }
+            );
+
+            const media = gsap.matchMedia();
+            media.add('(min-width: 769px)', () => {
+                gsap.to('.hero > *', {
+                    yPercent: -14,
+                    ease: 'none',
+                    scrollTrigger: {
+                        id: 'hero-parallax',
+                        trigger: '.hero',
+                        start: 'top top',
+                        end: 'bottom top',
+                        scrub: 0.6
+                    }
+                });
+            });
+
+            animateProductCards();
+            requestAnimationFrame(() => ScrollTrigger.refresh());
+        }
+
+        function animateProductCards() {
+            if (!window.gsap || !window.ScrollTrigger || !motionAllowed()) return;
+            const cards = gsap.utils.toArray('.product-card');
+            if (!cards.length) return;
+            productCardsTween?.scrollTrigger?.kill();
+            productCardsTween?.kill();
+            gsap.killTweensOf(cards);
+            productCardsTween = gsap.fromTo(cards,
+                { opacity: 0, y: 34 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.62,
+                    stagger: 0.07,
+                    ease: 'power3.out',
+                    clearProps: 'transform',
+                    scrollTrigger: {
+                        trigger: '.products-grid',
+                        start: 'top 88%',
+                        once: true
+                    }
+                }
+            );
+        }
+
+        function animateModal(modalId) {
+            document.body.classList.add('modal-open');
+            if (!window.gsap || !motionAllowed()) return;
+            const modal = document.querySelector(`#${modalId} .modal`);
+            gsap.fromTo(modal,
+                { opacity: 0, y: 30, scale: 0.975 },
+                { opacity: 1, y: 0, scale: 1, duration: 0.38, ease: 'power3.out', clearProps: 'transform' }
+            );
+        }
+
         // Check if user is logged in
         window.onload = function() {
             setupPhoneFormatting();
@@ -1424,6 +1768,18 @@
             if (currentUser) {
                 showMainSite();
             }
+            initPremiumMotion();
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', event => {
+                    if (event.target === overlay) closeModal(overlay.id);
+                });
+            });
+            document.addEventListener('keydown', event => {
+                if (event.key !== 'Escape') return;
+                const activeModal = document.querySelector('.modal-overlay.active');
+                if (activeModal) closeModal(activeModal.id);
+                else if (document.getElementById('cartSidebar').classList.contains('open')) toggleCart();
+            });
         };
 
         // Auth Functions
@@ -1512,14 +1868,16 @@
 
         function showMainSite() {
             document.getElementById('authOverlay').style.display = 'none';
+            document.body.classList.add('main-active');
             document.getElementById('mainSite').classList.add('show');
             document.getElementById('userNameDisplay').textContent = currentUser.name.split(' ')[0];
             document.getElementById('checkoutName').value = currentUser.name;
             document.getElementById('checkoutPhone').value = currentUser.phone;
             document.getElementById('checkoutAddress').value = currentUser.address;
-            renderProducts();
+            renderProducts(currentCategory);
             updateCart();
             updateWishlist();
+            requestAnimationFrame(initMainSiteMotion);
         }
 
         function logout() {
@@ -1540,7 +1898,7 @@
             
             grid.innerHTML = filtered.map(product => `
                 <div class="product-card">
-                        <img src="${product.image || 'https://placehold.co/300x300/7EC8E3/ffffff?text=' + encodeURIComponent(product.name)}" alt="${product.name}" class="product-image">
+                        <img src="${product.image || 'https://placehold.co/300x300/7EC8E3/ffffff?text=' + encodeURIComponent(product.name)}" alt="${product.name}" class="product-image" loading="lazy" decoding="async">
                     <div class="product-info">
                         <h3 class="product-title">${product.name}</h3>
                         <div class="product-price">
@@ -1554,11 +1912,13 @@
                     </div>
                 </div>
             `).join('');
+            requestAnimationFrame(animateProductCards);
         }
 
-        function filterProducts(category) {
+        function filterProducts(category, button) {
+            currentCategory = category;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            button.classList.add('active');
             renderProducts(category);
         }
 
@@ -1631,7 +1991,9 @@
         }
 
         function toggleCart() {
-            document.getElementById('cartSidebar').classList.toggle('open');
+            const cartSidebar = document.getElementById('cartSidebar');
+            const isOpen = cartSidebar.classList.toggle('open');
+            document.body.classList.toggle('panel-open', isOpen);
         }
 
         // Wishlist Functions
@@ -1658,6 +2020,7 @@
             }
             toggleCart();
             document.getElementById('checkoutModal').classList.add('active');
+            animateModal('checkoutModal');
         }
 
         function submitOrder(e) {
@@ -1696,6 +2059,7 @@
         // Admin Functions
         function openAdminPanel() {
             document.getElementById('adminModal').classList.add('active');
+            animateModal('adminModal');
             if (isAdmin) renderAdminProducts();
         }
 
@@ -1754,7 +2118,7 @@
             showToast(t('productAdded'), 'success');
             document.getElementById('addProductForm').reset();
             document.getElementById('productFileName').textContent = t('noFileChosen');
-            renderProducts();
+            renderProducts(currentCategory);
             renderAdminProducts();
         }
 
@@ -1767,7 +2131,7 @@
             }
             container.innerHTML = products.map(product => `
                 <article class="admin-product-item">
-                    <img src="${product.image || 'https://placehold.co/80x80/FDF2F8/BE185D?text=Item'}" alt="${product.name}">
+                    <img src="${product.image || 'https://placehold.co/80x80/FDF2F8/BE185D?text=Item'}" alt="${product.name}" loading="lazy" decoding="async">
                     <div>
                         <div class="admin-product-name">${product.name}</div>
                         <div class="admin-product-price">${formatPrice(product.price)}</div>
@@ -1786,7 +2150,7 @@
             localStorage.setItem('products', JSON.stringify(products));
             localStorage.setItem('cart', JSON.stringify(cart));
             localStorage.setItem('wishlist', JSON.stringify(wishlist));
-            renderProducts();
+            renderProducts(currentCategory);
             updateCart();
             updateWishlist();
             renderAdminProducts();
@@ -1819,7 +2183,23 @@
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
+            const overlay = document.getElementById(modalId);
+            const finish = () => {
+                overlay.classList.remove('active');
+                if (!document.querySelector('.modal-overlay.active')) document.body.classList.remove('modal-open');
+            };
+            if (!window.gsap || !motionAllowed()) {
+                finish();
+                return;
+            }
+            gsap.to(overlay.querySelector('.modal'), {
+                opacity: 0,
+                y: 20,
+                scale: 0.985,
+                duration: 0.22,
+                ease: 'power2.in',
+                onComplete: finish
+            });
         }
 
         function showToast(message, type = 'success') {
