@@ -1870,6 +1870,7 @@
         let currentLanguage = localStorage.getItem('language') || 'uz';
         let currentCategory = 'all';
         let productCardsTween = null;
+        const PRODUCTS_API = '/api/products';
 
         const translations = {
             uz: {
@@ -2032,6 +2033,57 @@
             });
         }
 
+        function syncErrorMessage() {
+            return currentLanguage === 'ru'
+                ? 'Не удалось сохранить товары на общий сервер. Проверьте переменные Vercel.'
+                : 'Mahsulotlarni umumiy serverga saqlab bo‘lmadi. Vercel sozlamalarini tekshiring.';
+        }
+
+        function normalizeProduct(product) {
+            return {
+                ...product,
+                id: Number(product.id) || Date.now(),
+                price: Number(product.price) || 0,
+                oldPrice: product.oldPrice ? Number(product.oldPrice) : null,
+                discount: product.discount ? Number(product.discount) : 0,
+                sizes: Array.isArray(product.sizes)
+                    ? product.sizes
+                    : String(product.sizes || 'S,M,L,XL').split(',').map(size => size.trim()).filter(Boolean),
+                image: product.image || ''
+            };
+        }
+
+        async function loadSharedProducts() {
+            try {
+                const response = await fetch(`${PRODUCTS_API}?t=${Date.now()}`, { cache: 'no-store' });
+                if (!response.ok) throw new Error(`Products API ${response.status}`);
+                const data = await response.json();
+                products = Array.isArray(data.products) ? data.products.map(normalizeProduct) : [];
+                localStorage.setItem('products', JSON.stringify(products));
+            } catch (error) {
+                console.warn('Shared products unavailable, using local cache:', error);
+                products = (JSON.parse(localStorage.getItem('products')) || []).map(normalizeProduct);
+            }
+            renderProducts(currentCategory);
+            if (isAdmin) renderAdminProducts();
+        }
+
+        async function saveSharedProducts(nextProducts) {
+            const normalized = nextProducts.map(normalizeProduct);
+            const response = await fetch(PRODUCTS_API, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': document.getElementById('adminPassword')?.value || ''
+                },
+                body: JSON.stringify({ products: normalized })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || `Products API ${response.status}`);
+            products = Array.isArray(data.products) ? data.products.map(normalizeProduct) : normalized;
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
         function motionAllowed() {
             return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         }
@@ -2149,9 +2201,10 @@
         }
 
         // Check if user is logged in
-        window.onload = function() {
+        window.onload = async function() {
             setupPhoneFormatting();
             setLanguage(currentLanguage);
+            await loadSharedProducts();
             if (currentUser) {
                 showMainSite();
             }
@@ -2272,6 +2325,7 @@
             document.getElementById('checkoutPhone').value = currentUser.phone;
             document.getElementById('checkoutAddress').value = currentUser.address;
             renderProducts(currentCategory);
+            loadSharedProducts();
             updateCart();
             updateWishlist();
             requestAnimationFrame(initMainSiteMotion);
@@ -2509,14 +2563,18 @@
             }
         }
 
-        function saveProduct(product) {
-            products.push(product);
-            localStorage.setItem('products', JSON.stringify(products));
-            showToast(t('productAdded'), 'success');
-            document.getElementById('addProductForm').reset();
-            document.getElementById('productFileName').textContent = t('noFileChosen');
-            renderProducts(currentCategory);
-            renderAdminProducts();
+        async function saveProduct(product) {
+            try {
+                await saveSharedProducts([...products, normalizeProduct(product)]);
+                showToast(t('productAdded'), 'success');
+                document.getElementById('addProductForm').reset();
+                document.getElementById('productFileName').textContent = t('noFileChosen');
+                renderProducts(currentCategory);
+                renderAdminProducts();
+            } catch (error) {
+                console.error('Product sync failed:', error);
+                showToast(syncErrorMessage(), 'error');
+            }
         }
 
         function renderAdminProducts() {
@@ -2538,20 +2596,24 @@
             `).join('');
         }
 
-        function deleteProduct(productId) {
+        async function deleteProduct(productId) {
             const product = products.find(item => item.id === productId);
             if (!product || !confirm(t('confirmDelete', { name: product.name }))) return;
-            products = products.filter(item => item.id !== productId);
-            cart = cart.filter(item => item.id !== productId);
-            wishlist = wishlist.filter(item => item.id !== productId);
-            localStorage.setItem('products', JSON.stringify(products));
-            localStorage.setItem('cart', JSON.stringify(cart));
-            localStorage.setItem('wishlist', JSON.stringify(wishlist));
-            renderProducts(currentCategory);
-            updateCart();
-            updateWishlist();
-            renderAdminProducts();
-            showToast(t('productDeleted'), 'success');
+            try {
+                await saveSharedProducts(products.filter(item => item.id !== productId));
+                cart = cart.filter(item => item.id !== productId);
+                wishlist = wishlist.filter(item => item.id !== productId);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                renderProducts(currentCategory);
+                updateCart();
+                updateWishlist();
+                renderAdminProducts();
+                showToast(t('productDeleted'), 'success');
+            } catch (error) {
+                console.error('Product delete sync failed:', error);
+                showToast(syncErrorMessage(), 'error');
+            }
         }
 
         // UI Functions
