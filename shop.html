@@ -92,6 +92,15 @@
             overflow-y: auto;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        body.auth-ready:not(.main-active) .auth-overlay {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .auth-container {
@@ -190,6 +199,47 @@
         .auth-form.active {
             display: block;
             animation: slideIn 0.3s ease;
+        }
+
+        .otp-form-intro {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .otp-email {
+            color: var(--primary);
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .otp-code-input {
+            min-height: 56px;
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.45em;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .auth-secondary-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .auth-link-btn {
+            min-height: 44px;
+            padding: 8px 12px;
+            border: 0;
+            background: transparent;
+            color: var(--primary);
+            cursor: pointer;
+            font: inherit;
+            font-weight: 600;
         }
 
         .form-group {
@@ -552,11 +602,53 @@
         .products-grid {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px 60px;
+            padding: 0 20px 24px;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 30px;
         }
+
+        .catalog-loader {
+            display: grid;
+            justify-items: center;
+            gap: 12px;
+            min-height: 88px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 8px 20px 48px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .catalog-loader[hidden] { display: none; }
+
+        .catalog-loader-status {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .load-more-btn {
+            min-width: 180px;
+            min-height: 48px;
+            padding: 12px 24px;
+            border: 2px solid var(--primary);
+            border-radius: 999px;
+            background: #FFFFFF;
+            color: var(--primary);
+            cursor: pointer;
+            font: inherit;
+            font-weight: 600;
+            transition: background 200ms ease, color 200ms ease, box-shadow 200ms ease;
+        }
+
+        .load-more-btn:hover,
+        .load-more-btn:focus-visible {
+            background: var(--primary);
+            color: #FFFFFF;
+            box-shadow: 0 10px 24px rgba(190, 24, 93, 0.2);
+        }
+
+        .load-more-btn[hidden] { display: none; }
 
         .empty-state {
             grid-column: 1 / -1;
@@ -718,6 +810,39 @@
             font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 10px;
+        }
+
+        .product-description {
+            min-height: 3em;
+            margin: 0 0 14px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.55;
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+        }
+
+        .product-description:empty { display: none; }
+
+        .cart-item-description {
+            display: -webkit-box;
+            margin-top: 4px;
+            overflow: hidden;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            line-height: 1.4;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
+        .cart-item-description:empty { display: none; }
+
+        .form-helper {
+            display: block;
+            margin-top: 7px;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            line-height: 1.45;
         }
 
         .product-price {
@@ -1001,6 +1126,8 @@
             opacity: 0.3;
             transition: opacity 0.3s;
         }
+
+        .admin-access[hidden] { display: none !important; }
 
         .admin-access:hover {
             opacity: 1;
@@ -1622,6 +1749,23 @@
                     </div>
                     <button type="submit" class="btn-primary" data-i18n="login">Kirish</button>
                 </form>
+
+                <!-- Email OTP verification -->
+                <form class="auth-form" id="otpForm" onsubmit="verifyEmailOtp(event)">
+                    <p class="otp-form-intro">
+                        <span data-i18n="otpSentTo">Tasdiqlash kodi yuborildi:</span><br>
+                        <span class="otp-email" id="otpEmailDisplay"></span>
+                    </p>
+                    <div class="form-group">
+                        <label for="otpCode" data-i18n="otpCode">6 xonali kod *</label>
+                        <input class="otp-code-input" type="text" id="otpCode" required inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000">
+                    </div>
+                    <button type="submit" class="btn-primary" id="verifyOtpButton" data-i18n="verifyOtp">Kodni tasdiqlash</button>
+                    <div class="auth-secondary-actions">
+                        <button type="button" class="auth-link-btn" onclick="resendEmailOtp()" data-i18n="resendOtp">Kodni qayta yuborish</button>
+                        <button type="button" class="auth-link-btn" onclick="cancelOtpVerification()" data-i18n="changeEmail">Emailni o‘zgartirish</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1629,8 +1773,8 @@
     <!-- Main Website -->
     <div class="main-site" id="mainSite">
         <!-- Admin Access Button -->
-        <div class="admin-access">
-            <button class="admin-access-btn" onclick="openAdminPanel()" data-i18n="forAdmin">Administrator uchun</button>
+        <div class="admin-access" id="adminAccess" hidden>
+            <button class="admin-access-btn" onclick="openAdminPanel()" data-i18n="addProductAccess">+ Mahsulot</button>
         </div>
 
         <!-- Header -->
@@ -1683,6 +1827,10 @@
         <!-- Products Grid -->
         <div class="products-grid" id="productsGrid">
             <!-- Products will be loaded here -->
+        </div>
+        <div class="catalog-loader" id="catalogLoader" aria-live="polite">
+            <p class="catalog-loader-status" id="catalogLoaderStatus"></p>
+            <button class="load-more-btn" id="loadMoreProducts" type="button" onclick="loadNextProductBatch()" data-i18n="loadMore">Yana ko‘rsatish</button>
         </div>
 
         <footer class="site-footer">
@@ -1836,6 +1984,7 @@
                         <div class="form-group">
                             <label data-i18n="description">Tavsif</label>
                             <textarea id="prodDescription" rows="3"></textarea>
+                            <small class="form-helper" data-i18n="descriptionHelp">Tavsif sun’iy intellekt yordamida rus tiliga tarjima qilinadi.</small>
                         </div>
                         <div class="form-group">
                             <label data-i18n="sizes">O‘lchamlar (vergul bilan)</label>
@@ -1858,6 +2007,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Data Storage
         let users = JSON.parse(localStorage.getItem('users')) || [];
@@ -1869,8 +2019,17 @@
         let isAdmin = false;
         let currentLanguage = localStorage.getItem('language') || 'uz';
         let currentCategory = 'all';
+        let supabaseAuthUser = null;
+        let pendingAuth = JSON.parse(sessionStorage.getItem('pendingAuth') || 'null');
+        let visibleProductCount = 0;
+        let catalogObserver = null;
         let productCardsTween = null;
         const PRODUCTS_API = '/api/products';
+        const PRODUCT_BATCH_SIZE = 12;
+        const ADMIN_EMAIL = 'sabinastyle77@gmail.com';
+        const SUPABASE_URL = 'https://lqzigxdjygbzkylhmrsq.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_RLCfftqzPAWUV6oUJeDXkQ_R6DUhVEs';
+        const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
 
         const translations = {
             uz: {
@@ -1886,7 +2045,7 @@
                 termsAgreement: "Foydalanish shartlari va maxfiylik siyosatiga roziman *",
                 createAccount: "Hisob yaratish", emailOrPhone: "Email yoki telefon *",
                 emailOrPhonePlaceholder: "Email yoki telefonni kiriting", enterPassword: "Parolingizni kiriting",
-                forgotPassword: "Parolni unutdingizmi?", forAdmin: "Administrator uchun",
+                forgotPassword: "Parolni unutdingizmi?", forAdmin: "Administrator uchun", addProductAccess: "+ Mahsulot",
                 myProfile: "👤 Mening profilim", myOrders: "📦 Buyurtmalarim", wishlist: "❤️ Sevimlilar",
                 closeLabel: "Yopish", wishlistLabel: "Sevimlilar", cartLabel: "Savat",
                 logout: "🚪 Chiqish", discoverStyle: "O‘z uslubingizni kashf eting",
@@ -1901,12 +2060,17 @@
                 adminPassword: "Administrator parolini kiriting", addNewProduct: "Yangi mahsulot qo‘shish",
                 productName: "Mahsulot nomi *", category: "Turkum *", price: "Narxi (so‘m) *",
                 oldPrice: "Eski narxi", discount: "Chegirma %", imageUpload: "Rasm yuklash",
-                description: "Tavsif", sizes: "O‘lchamlar (vergul bilan)", chooseImage: "Rasm tanlash",
+                description: "Tavsif", descriptionHelp: "Tavsif sun’iy intellekt yordamida rus tiliga tarjima qilinadi.", sizes: "O‘lchamlar (vergul bilan)", chooseImage: "Rasm tanlash",
                 noFileChosen: "Fayl tanlanmagan", saveProduct: "💾 Mahsulotni saqlash",
                 manageProducts: "Mahsulotlarni boshqarish", delete: "O‘chirish", noProducts: "Hozircha mahsulotlar yo‘q",
                 noProductsFound: "Mahsulotlar topilmadi", addToCart: "Savatga qo‘shish", size: "O‘lcham",
+                loadMore: "Yana ko‘rsatish", showingProducts: "{shown} / {total} ta mahsulot ko‘rsatildi", allProductsShown: "Barcha {total} ta mahsulot ko‘rsatildi",
                 userExists: "Bunday foydalanuvchi mavjud", invalidPhone: "Telefon raqamini 90 123 45 67 formatida kiriting",
                 registrationSuccess: "Ro‘yxatdan o‘tish muvaffaqiyatli",
+                otpSentTo: "Tasdiqlash kodi yuborildi:", otpCode: "6 xonali kod *", verifyOtp: "Kodni tasdiqlash",
+                resendOtp: "Kodni qayta yuborish", changeEmail: "Emailni o‘zgartirish", otpSent: "Tasdiqlash kodi emailingizga yuborildi",
+                otpVerified: "Email muvaffaqiyatli tasdiqlandi", otpInvalid: "Kod noto‘g‘ri yoki muddati tugagan",
+                otpSendError: "Kod yuborilmadi. Email va SMTP sozlamalarini tekshiring.", verifying: "Tekshirilmoqda...",
                 invalidCredentials: "Email, telefon yoki parol noto‘g‘ri", welcomeBack: "Xush kelibsiz!",
                 addedToCart: "Savatga qo‘shildi", removedFromCart: "Savatdan olib tashlandi",
                 wishlistItems: "Sevimlilar: {count} ta", cartIsEmpty: "Savatingiz bo‘sh!",
@@ -1938,7 +2102,7 @@
                 termsAgreement: "Я принимаю условия использования и политику конфиденциальности *",
                 createAccount: "Создать аккаунт", emailOrPhone: "Email или телефон *",
                 emailOrPhonePlaceholder: "Введите email или телефон", enterPassword: "Введите пароль",
-                forgotPassword: "Забыли пароль?", forAdmin: "Для администратора",
+                forgotPassword: "Забыли пароль?", forAdmin: "Для администратора", addProductAccess: "+ Товар",
                 myProfile: "👤 Мой профиль", myOrders: "📦 Мои заказы", wishlist: "❤️ Избранное",
                 closeLabel: "Закрыть", wishlistLabel: "Избранное", cartLabel: "Корзина",
                 logout: "🚪 Выйти", discoverStyle: "Откройте свой стиль",
@@ -1953,12 +2117,17 @@
                 adminPassword: "Введите пароль администратора", addNewProduct: "Добавить товар",
                 productName: "Название товара *", category: "Категория *", price: "Цена (сум) *",
                 oldPrice: "Старая цена", discount: "Скидка %", imageUpload: "Загрузить изображение",
-                description: "Описание", sizes: "Размеры (через запятую)", chooseImage: "Выбрать изображение",
+                description: "Описание", descriptionHelp: "Описание будет переведено на узбекский язык с помощью искусственного интеллекта.", sizes: "Размеры (через запятую)", chooseImage: "Выбрать изображение",
                 noFileChosen: "Файл не выбран", saveProduct: "💾 Сохранить товар",
                 manageProducts: "Управление товарами", delete: "Удалить", noProducts: "Товаров пока нет",
                 noProductsFound: "Товары не найдены", addToCart: "Добавить в корзину", size: "Размер",
+                loadMore: "Показать ещё", showingProducts: "Показано {shown} из {total} товаров", allProductsShown: "Показаны все товары: {total}",
                 userExists: "Такой пользователь уже существует", invalidPhone: "Введите номер в формате 90 123 45 67",
                 registrationSuccess: "Регистрация прошла успешно",
+                otpSentTo: "Код подтверждения отправлен на:", otpCode: "Шестизначный код *", verifyOtp: "Подтвердить код",
+                resendOtp: "Отправить код повторно", changeEmail: "Изменить email", otpSent: "Код подтверждения отправлен на вашу почту",
+                otpVerified: "Email успешно подтверждён", otpInvalid: "Неверный или просроченный код",
+                otpSendError: "Не удалось отправить код. Проверьте email и настройки SMTP.", verifying: "Проверяем...",
                 invalidCredentials: "Неверный email, телефон или пароль", welcomeBack: "С возвращением!",
                 addedToCart: "Добавлено в корзину", removedFromCart: "Удалено из корзины",
                 wishlistItems: "В избранном: {count}", cartIsEmpty: "Корзина пуста!",
@@ -2006,7 +2175,7 @@
                 button.classList.toggle('active', isActive);
                 button.setAttribute('aria-pressed', String(isActive));
             });
-            renderProducts(currentCategory);
+            renderProducts(currentCategory, false);
             updateCart();
             if (isAdmin) renderAdminProducts();
         }
@@ -2039,6 +2208,17 @@
                 : 'Mahsulotlarni umumiy serverga saqlab bo‘lmadi. Vercel sozlamalarini tekshiring.';
         }
 
+        async function getAdminAccessToken() {
+            if (!supabaseClient) throw new Error('Supabase client unavailable');
+            const { data } = await supabaseClient.auth.getSession();
+            const session = data.session;
+            if (!session?.access_token || session.user?.email?.toLowerCase() !== ADMIN_EMAIL) {
+                throw new Error('Verified admin session required');
+            }
+            supabaseAuthUser = session.user;
+            return session.access_token;
+        }
+
         function normalizeProduct(product) {
             return {
                 ...product,
@@ -2046,6 +2226,10 @@
                 price: Number(product.price) || 0,
                 oldPrice: product.oldPrice ? Number(product.oldPrice) : null,
                 discount: product.discount ? Number(product.discount) : 0,
+                description: String(product.description || ''),
+                descriptionLanguage: product.descriptionLanguage === 'ru' ? 'ru' : 'uz',
+                descriptionUz: String(product.descriptionUz || (product.descriptionLanguage !== 'ru' ? product.description || '' : '')),
+                descriptionRu: String(product.descriptionRu || (product.descriptionLanguage === 'ru' ? product.description || '' : '')),
                 sizes: Array.isArray(product.sizes)
                     ? product.sizes
                     : String(product.sizes || 'S,M,L,XL').split(',').map(size => size.trim()).filter(Boolean),
@@ -2069,12 +2253,14 @@
         }
 
         async function saveSharedProducts(nextProducts) {
+            if (!isAdminAccount() || !isAdmin) throw new Error('Admin access required');
+            const accessToken = await getAdminAccessToken();
             const normalized = nextProducts.map(normalizeProduct);
             const response = await fetch(PRODUCTS_API, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Admin-Password': document.getElementById('adminPassword')?.value || ''
+                    Authorization: `Bearer ${accessToken}`
                 },
                 body: JSON.stringify({ products: normalized })
             });
@@ -2167,11 +2353,9 @@
 
         function animateProductCards() {
             if (!window.gsap || !window.ScrollTrigger || !motionAllowed()) return;
-            const cards = gsap.utils.toArray('.product-card');
+            const cards = gsap.utils.toArray('.product-card:not([data-animated])');
             if (!cards.length) return;
-            productCardsTween?.scrollTrigger?.kill();
-            productCardsTween?.kill();
-            gsap.killTweensOf(cards);
+            cards.forEach(card => card.dataset.animated = 'true');
             productCardsTween = gsap.fromTo(cards,
                 { opacity: 0, y: 34 },
                 {
@@ -2204,10 +2388,25 @@
         window.onload = async function() {
             setupPhoneFormatting();
             setLanguage(currentLanguage);
-            await loadSharedProducts();
+            try {
+                const { data } = await supabaseClient.auth.getSession();
+                supabaseAuthUser = data.session?.user || null;
+            } catch (error) {
+                console.warn('Supabase session unavailable:', error);
+            }
             if (currentUser) {
                 showMainSite();
+            } else if (pendingAuth?.user?.email) {
+                showOtpForm();
+            } else if (users.length > 0) {
+                switchAuthTab('login');
+                const lastLoginUser = localStorage.getItem('lastLoginUser');
+                const lastUser = users.find(user => user.email === lastLoginUser || user.phone === lastLoginUser) || users[users.length - 1];
+                document.getElementById('loginEmail').value = lastLoginUser || lastUser.email || lastUser.phone || '';
             }
+            if (!currentUser) document.body.classList.add('auth-ready');
+            await loadSharedProducts();
+            initProductInfiniteScroll();
             initPremiumMotion();
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
                 overlay.addEventListener('click', event => {
@@ -2245,7 +2444,94 @@
             }
         }
 
-        function handleRegister(e) {
+        function showOtpForm() {
+            if (!pendingAuth?.user?.email) return;
+            document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+            document.getElementById('otpEmailDisplay').textContent = pendingAuth.user.email;
+            document.getElementById('otpForm').classList.add('active');
+            document.getElementById('otpCode').value = '';
+            requestAnimationFrame(() => document.getElementById('otpCode').focus());
+        }
+
+        async function sendPendingOtp(showSuccess = true) {
+            if (!pendingAuth?.user?.email) return false;
+            if (!supabaseClient) {
+                showToast(t('otpSendError'), 'error');
+                return false;
+            }
+            const { error } = await supabaseClient.auth.signInWithOtp({
+                email: pendingAuth.user.email,
+                options: {
+                    shouldCreateUser: true,
+                    data: { name: pendingAuth.user.name || '' }
+                }
+            });
+            if (error) {
+                console.error('OTP send failed:', error);
+                showToast(t('otpSendError'), 'error');
+                return false;
+            }
+            if (showSuccess) showToast(t('otpSent'), 'success');
+            return true;
+        }
+
+        async function resendEmailOtp() {
+            await sendPendingOtp(true);
+        }
+
+        function cancelOtpVerification() {
+            const mode = pendingAuth?.mode || 'register';
+            pendingAuth = null;
+            sessionStorage.removeItem('pendingAuth');
+            switchAuthTab(mode === 'login' ? 'login' : 'register');
+        }
+
+        async function verifyEmailOtp(e) {
+            e.preventDefault();
+            if (!pendingAuth?.user?.email) return cancelOtpVerification();
+            if (!supabaseClient) {
+                showToast(t('otpSendError'), 'error');
+                return;
+            }
+
+            const button = document.getElementById('verifyOtpButton');
+            const originalText = t('verifyOtp');
+            button.disabled = true;
+            button.textContent = t('verifying');
+
+            const token = document.getElementById('otpCode').value.replace(/\D/g, '');
+            const { data, error } = await supabaseClient.auth.verifyOtp({
+                email: pendingAuth.user.email,
+                token,
+                type: 'email'
+            });
+
+            button.disabled = false;
+            button.textContent = originalText;
+            if (error || !data.user) {
+                console.error('OTP verification failed:', error);
+                showToast(t('otpInvalid'), 'error');
+                document.getElementById('otpCode').select();
+                return;
+            }
+
+            supabaseAuthUser = data.user;
+            const user = pendingAuth.user;
+            if (pendingAuth.mode === 'register') {
+                users.push(user);
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            localStorage.setItem('lastLoginUser', user.email || user.phone);
+            currentUser = user;
+            pendingAuth = null;
+            sessionStorage.removeItem('pendingAuth');
+            showToast(t('otpVerified'), 'success');
+            setTimeout(showMainSite, 600);
+        }
+
+        async function handleRegister(e) {
             e.preventDefault();
             
             const password = document.getElementById('regPassword').value;
@@ -2267,7 +2553,7 @@
                 id: Date.now(),
                 name: document.getElementById('regName').value,
                 phone: formatUzbekPhone(phoneDigits, true),
-                email: document.getElementById('regEmail').value,
+                email: document.getElementById('regEmail').value.trim().toLowerCase(),
                 password: btoa(password),
                 address: document.getElementById('regAddress').value,
                 registeredAt: new Date().toISOString(),
@@ -2279,34 +2565,45 @@
                 return;
             }
             
-            users.push(user);
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            currentUser = user;
-            
-            showToast(t('registrationSuccess'), 'success');
-            setTimeout(() => {
-                showMainSite();
-            }, 1000);
+            pendingAuth = { mode: 'register', user };
+            sessionStorage.setItem('pendingAuth', JSON.stringify(pendingAuth));
+            if (await sendPendingOtp(false)) {
+                showOtpForm();
+                showToast(t('otpSent'), 'success');
+            }
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             
             const emailOrPhone = document.getElementById('loginEmail').value.trim();
+            const normalizedEmail = emailOrPhone.toLowerCase();
             const normalizedPhone = formatUzbekPhone(emailOrPhone, true);
             const password = btoa(document.getElementById('loginPassword').value);
             
             const user = users.find(u => 
-                (u.email === emailOrPhone || u.phone === emailOrPhone || formatUzbekPhone(u.phone, true) === normalizedPhone) && u.password === password
+                (u.email?.toLowerCase() === normalizedEmail || u.phone === emailOrPhone || formatUzbekPhone(u.phone, true) === normalizedPhone) && u.password === password
             );
             
             if (!user) {
                 showToast(t('invalidCredentials'), 'error');
                 return;
             }
+
+            const isAdminEmail = user.email?.trim().toLowerCase() === ADMIN_EMAIL;
+            const hasVerifiedAdminSession = supabaseAuthUser?.email?.trim().toLowerCase() === ADMIN_EMAIL;
+            if (isAdminEmail && !hasVerifiedAdminSession) {
+                pendingAuth = { mode: 'login', user };
+                sessionStorage.setItem('pendingAuth', JSON.stringify(pendingAuth));
+                if (await sendPendingOtp(false)) {
+                    showOtpForm();
+                    showToast(t('otpSent'), 'success');
+                }
+                return;
+            }
             
             localStorage.setItem('currentUser', JSON.stringify(user));
+            localStorage.setItem('lastLoginUser', user.email || user.phone);
             currentUser = user;
             
             showToast(t('welcomeBack'), 'success');
@@ -2319,6 +2616,7 @@
             document.getElementById('authOverlay').style.display = 'none';
             document.body.classList.add('main-active');
             document.getElementById('mainSite').classList.add('show');
+            updateAdminAccess();
             document.getElementById('userNameDisplay').textContent = currentUser.name.split(' ')[0];
             document.getElementById('userAvatar').textContent = currentUser.name.trim().charAt(0) || 'S';
             document.getElementById('checkoutName').value = currentUser.name;
@@ -2331,46 +2629,129 @@
             requestAnimationFrame(initMainSiteMotion);
         }
 
-        function logout() {
+        async function logout() {
             localStorage.removeItem('currentUser');
             currentUser = null;
+            supabaseAuthUser = null;
+            if (supabaseClient) await supabaseClient.auth.signOut().catch(error => console.warn('Supabase sign out failed:', error));
             location.reload();
         }
 
+        function isAdminAccount() {
+            const localEmail = currentUser?.email?.trim().toLowerCase();
+            const verifiedEmail = supabaseAuthUser?.email?.trim().toLowerCase();
+            return localEmail === ADMIN_EMAIL && verifiedEmail === ADMIN_EMAIL;
+        }
+
+        function updateAdminAccess() {
+            const adminAccess = document.getElementById('adminAccess');
+            if (adminAccess) adminAccess.hidden = !isAdminAccount();
+            if (!isAdminAccount()) isAdmin = false;
+        }
+
         // Product Functions
-        function renderProducts(category = 'all') {
-            const grid = document.getElementById('productsGrid');
-            const filtered = category === 'all' ? products : products.filter(p => p.category === category);
-            
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="empty-state"><div><div class="empty-state-icon">🛍️</div><p>${t('noProductsFound')}</p></div></div>`;
-                return;
-            }
-            
-            grid.innerHTML = filtered.map(product => `
+        function getProductDescription(product) {
+            if (!product) return '';
+            return currentLanguage === 'ru'
+                ? (product.descriptionRu || product.description || product.descriptionUz || '')
+                : (product.descriptionUz || product.description || product.descriptionRu || '');
+        }
+
+        function hydrateProductDescriptions(root = document) {
+            root.querySelectorAll('[data-product-description]').forEach(element => {
+                const product = products.find(item => item.id === Number(element.dataset.productDescription));
+                element.textContent = getProductDescription(product);
+            });
+        }
+
+        function getFilteredProducts(category = currentCategory) {
+            return category === 'all' ? products : products.filter(product => product.category === category);
+        }
+
+        function productCardTemplate(product) {
+            return `
                 <div class="product-card">
-                        <img src="${product.image || 'https://placehold.co/300x300/7EC8E3/ffffff?text=' + encodeURIComponent(product.name)}" alt="${product.name}" class="product-image" loading="lazy" decoding="async">
+                    <img src="${product.image || 'https://placehold.co/300x300/7EC8E3/ffffff?text=' + encodeURIComponent(product.name)}" alt="${product.name}" class="product-image" loading="lazy" decoding="async">
                     <div class="product-info">
                         <h3 class="product-title">${product.name}</h3>
+                        <p class="product-description" data-product-description="${product.id}"></p>
                         <div class="product-price">
                             ${formatPrice(product.price)}
                             ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)}</span>` : ''}
                         </div>
                         <div class="size-selector" id="sizes-${product.id}">
-                            ${product.sizes.map(s => `<button class="size-btn" onclick="selectSize(this)">${s}</button>`).join('')}
+                            ${product.sizes.map(size => `<button class="size-btn" onclick="selectSize(this)">${size}</button>`).join('')}
                         </div>
                         <button class="add-to-cart" onclick="addToCart(${product.id})">${t('addToCart')}</button>
                     </div>
                 </div>
-            `).join('');
+            `;
+        }
+
+        function updateCatalogLoader(total) {
+            const loader = document.getElementById('catalogLoader');
+            const status = document.getElementById('catalogLoaderStatus');
+            const button = document.getElementById('loadMoreProducts');
+            loader.hidden = total === 0;
+            if (!total) return;
+
+            const allShown = visibleProductCount >= total;
+            status.textContent = allShown
+                ? t('allProductsShown', { total })
+                : t('showingProducts', { shown: visibleProductCount, total });
+            button.hidden = allShown;
+        }
+
+        function renderProducts(category = 'all', reset = true) {
+            const grid = document.getElementById('productsGrid');
+            const filtered = getFilteredProducts(category);
+
+            if (filtered.length === 0) {
+                visibleProductCount = 0;
+                grid.innerHTML = `<div class="empty-state"><div><div class="empty-state-icon">🛍️</div><p>${t('noProductsFound')}</p></div></div>`;
+                updateCatalogLoader(0);
+                return;
+            }
+
+            visibleProductCount = reset
+                ? Math.min(PRODUCT_BATCH_SIZE, filtered.length)
+                : Math.min(Math.max(visibleProductCount, PRODUCT_BATCH_SIZE), filtered.length);
+            grid.innerHTML = filtered.slice(0, visibleProductCount).map(productCardTemplate).join('');
+            hydrateProductDescriptions(grid);
+            updateCatalogLoader(filtered.length);
             requestAnimationFrame(animateProductCards);
+        }
+
+        function loadNextProductBatch() {
+            const grid = document.getElementById('productsGrid');
+            const filtered = getFilteredProducts();
+            if (visibleProductCount >= filtered.length) {
+                updateCatalogLoader(filtered.length);
+                return;
+            }
+
+            const nextProducts = filtered.slice(visibleProductCount, visibleProductCount + PRODUCT_BATCH_SIZE);
+            grid.insertAdjacentHTML('beforeend', nextProducts.map(productCardTemplate).join(''));
+            visibleProductCount += nextProducts.length;
+            hydrateProductDescriptions(grid);
+            updateCatalogLoader(filtered.length);
+            requestAnimationFrame(animateProductCards);
+        }
+
+        function initProductInfiniteScroll() {
+            catalogObserver?.disconnect();
+            if (!('IntersectionObserver' in window)) return;
+            catalogObserver = new IntersectionObserver(entries => {
+                if (entries.some(entry => entry.isIntersecting)) loadNextProductBatch();
+            }, { rootMargin: '600px 0px', threshold: 0 });
+            catalogObserver.observe(document.getElementById('catalogLoader'));
         }
 
         function filterProducts(category, button) {
             currentCategory = category;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             button.classList.add('active');
-            renderProducts(category);
+            renderProducts(category, true);
         }
 
         function selectSize(btn) {
@@ -2393,6 +2774,10 @@
                     name: product.name,
                     price: product.price,
                     image: product.image,
+                    description: product.description,
+                    descriptionLanguage: product.descriptionLanguage,
+                    descriptionUz: product.descriptionUz,
+                    descriptionRu: product.descriptionRu,
                     size: size,
                     quantity: 1
                 });
@@ -2423,12 +2808,14 @@
                     <img src="${item.image || 'https://placehold.co/80x80/7EC8E3/ffffff?text=Item'}" alt="${item.name}" class="cart-item-image">
                     <div class="cart-item-details">
                         <div class="cart-item-title">${item.name}</div>
+                        <div class="cart-item-description" data-product-description="${item.id}"></div>
                         <div style="color: var(--text-secondary); font-size: 0.9rem;">${t('size')}: ${item.size}</div>
                         <div class="cart-item-price">${formatPrice(item.price)} x ${item.quantity}</div>
                     </div>
                     <button class="cart-item-remove" onclick="removeFromCart(${index})">×</button>
                 </div>
             `).join('');
+            hydrateProductDescriptions(container);
             
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             totalEl.textContent = formatPrice(total);
@@ -2509,12 +2896,14 @@
 
         // Admin Functions
         function openAdminPanel() {
+            if (!isAdminAccount()) return;
             document.getElementById('adminModal').classList.add('active');
             animateModal('adminModal');
             if (isAdmin) renderAdminProducts();
         }
 
         function checkAdminPassword() {
+            if (!isAdminAccount()) return;
             const password = document.getElementById('adminPassword').value;
             if (password === '1986') {
                 isAdmin = true;
@@ -2537,6 +2926,7 @@
 
         function addProduct(e) {
             e.preventDefault();
+            if (!isAdminAccount() || !isAdmin) return;
             
             const fileInput = document.getElementById('prodImage');
             const product = {
@@ -2547,6 +2937,7 @@
                 oldPrice: document.getElementById('prodOldPrice').value ? parseInt(document.getElementById('prodOldPrice').value) : null,
                 discount: document.getElementById('prodDiscount').value ? parseInt(document.getElementById('prodDiscount').value) : 0,
                 description: document.getElementById('prodDescription').value,
+                descriptionLanguage: currentLanguage,
                 sizes: document.getElementById('prodSizes').value.split(',').map(s => s.trim()),
                 image: ''
             };
@@ -2565,7 +2956,8 @@
 
         async function saveProduct(product) {
             try {
-                await saveSharedProducts([...products, normalizeProduct(product)]);
+                const translatedProduct = await addAiDescriptionTranslation(normalizeProduct(product));
+                await saveSharedProducts([...products, translatedProduct]);
                 showToast(t('productAdded'), 'success');
                 document.getElementById('addProductForm').reset();
                 document.getElementById('productFileName').textContent = t('noFileChosen');
@@ -2575,6 +2967,34 @@
                 console.error('Product sync failed:', error);
                 showToast(syncErrorMessage(), 'error');
             }
+        }
+
+        async function addAiDescriptionTranslation(product) {
+            const description = product.description.trim();
+            if (!description) return product;
+
+            const sourceLanguage = product.descriptionLanguage;
+            const targetLanguage = sourceLanguage === 'uz' ? 'ru' : 'uz';
+            product[sourceLanguage === 'uz' ? 'descriptionUz' : 'descriptionRu'] = description;
+
+            try {
+                const accessToken = await getAdminAccessToken();
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({ text: description, sourceLanguage, targetLanguage })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.translation) throw new Error(data.error || `Translate API ${response.status}`);
+                product[targetLanguage === 'uz' ? 'descriptionUz' : 'descriptionRu'] = data.translation;
+            } catch (error) {
+                console.warn('AI description translation unavailable:', error);
+            }
+
+            return product;
         }
 
         function renderAdminProducts() {
@@ -2597,6 +3017,7 @@
         }
 
         async function deleteProduct(productId) {
+            if (!isAdminAccount() || !isAdmin) return;
             const product = products.find(item => item.id === productId);
             if (!product || !confirm(t('confirmDelete', { name: product.name }))) return;
             try {

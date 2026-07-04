@@ -1,12 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const { verifyAdminRequest } = require('./_auth');
 
 const PRODUCTS_PATH = path.join(process.cwd(), 'products.json');
 const REPO = process.env.GITHUB_REPO || 'mrbeastvd30-source/shop';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
 const FILE_PATH = process.env.GITHUB_PRODUCTS_PATH || 'products.json';
 const TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '1986';
 
 function send(res, status, payload) {
   res.statusCode = status;
@@ -26,6 +26,9 @@ function normalizeProducts(payload) {
       oldPrice: product.oldPrice ? Number(product.oldPrice) : null,
       discount: product.discount ? Number(product.discount) : 0,
       description: String(product.description || ''),
+      descriptionLanguage: product.descriptionLanguage === 'ru' ? 'ru' : 'uz',
+      descriptionUz: String(product.descriptionUz || ''),
+      descriptionRu: String(product.descriptionRu || ''),
       sizes: Array.isArray(product.sizes)
         ? product.sizes
         : String(product.sizes || 'S,M,L,XL').split(',').map((size) => size.trim()).filter(Boolean),
@@ -94,7 +97,7 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      if (req.headers?.['x-admin-password'] !== ADMIN_PASSWORD) {
+      if (!(await verifyAdminRequest(req))) {
         return send(res, 401, { error: 'Unauthorized' });
       }
       const products = normalizeProducts(req.body || {});
