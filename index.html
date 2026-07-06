@@ -2143,6 +2143,7 @@
                 otpSendError: "Kod yuborilmadi. Internet, email va SMTP sozlamalarini tekshiring.", verifying: "Tekshirilmoqda...",
                 sendingCode: "Kod yuborilmoqda...", fillRequired: "Barcha majburiy maydonlarni to‘ldiring",
                 invalidCredentials: "Email, telefon yoki parol noto‘g‘ri", welcomeBack: "Xush kelibsiz!",
+                adminPasswordMismatch: "Supabase’da administrator uchun yaratilgan parolni kiriting",
                 addedToCart: "Savatga qo‘shildi", removedFromCart: "Savatdan olib tashlandi",
                 wishlistItems: "Sevimlilar: {count} ta", cartIsEmpty: "Savatingiz bo‘sh!",
                 orderSuccess: "Buyurtma muvaffaqiyatli yuborildi", adminGranted: "Administratorga kirish ochildi",
@@ -2203,6 +2204,7 @@
                 otpSendError: "Не удалось отправить код. Проверьте интернет, email и настройки SMTP.", verifying: "Проверяем...",
                 sendingCode: "Отправляем код...", fillRequired: "Заполните все обязательные поля",
                 invalidCredentials: "Неверный email, телефон или пароль", welcomeBack: "С возвращением!",
+                adminPasswordMismatch: "Введите пароль, который вы задали администратору в Supabase",
                 addedToCart: "Добавлено в корзину", removedFromCart: "Удалено из корзины",
                 wishlistItems: "В избранном: {count}", cartIsEmpty: "Корзина пуста!",
                 orderSuccess: "Заказ успешно оформлен", adminGranted: "Доступ администратора открыт",
@@ -2679,7 +2681,7 @@
 
         async function authenticateAdminPassword(email, password) {
             if (!supabaseClient) {
-                showToast(t('invalidCredentials'), 'error');
+                showToast(t('adminPasswordMismatch'), 'error');
                 return false;
             }
             try {
@@ -2689,7 +2691,7 @@
                 return true;
             } catch (error) {
                 console.error('Admin password sign-in failed:', error);
-                showToast(t('invalidCredentials'), 'error');
+                showToast(t('adminPasswordMismatch'), 'error');
                 return false;
             }
         }
@@ -2732,7 +2734,10 @@
                 isAdmin: false
             };
             
-            if (users.find(u => u.email === user.email || u.phone === user.phone)) {
+            const existingEmailIndex = users.findIndex(u => u.email?.toLowerCase() === user.email);
+            const existingPhoneIndex = users.findIndex(u => u.phone === user.phone);
+            const phoneBelongsToAnotherUser = existingPhoneIndex >= 0 && users[existingPhoneIndex].email?.toLowerCase() !== user.email;
+            if ((user.email !== ADMIN_EMAIL && (existingEmailIndex >= 0 || existingPhoneIndex >= 0)) || phoneBelongsToAnotherUser) {
                 showToast(t('userExists'), 'error');
                 return;
             }
@@ -2753,7 +2758,8 @@
             const adminAuthenticated = await authenticateAdminPassword(user.email, password);
             setRegisterSubmitting(false);
             if (!adminAuthenticated) return;
-            users.push(user);
+            if (existingEmailIndex >= 0) users[existingEmailIndex] = user;
+            else users.push(user);
             writeStoredValue(localStorage, 'users', JSON.stringify(users));
             writeStoredValue(localStorage, 'currentUser', JSON.stringify(user));
             writeStoredValue(localStorage, 'lastLoginUser', user.email);
