@@ -2011,22 +2011,33 @@
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Data Storage
-        let users = JSON.parse(localStorage.getItem('users')) || [];
-        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        let products = JSON.parse(localStorage.getItem('products')) || [];
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+        function readStoredJson(storage, key, fallback) {
+            try {
+                const value = storage.getItem(key);
+                return value ? JSON.parse(value) : fallback;
+            } catch (error) {
+                console.warn(`Invalid saved data for ${key}; resetting it.`, error);
+                storage.removeItem(key);
+                return fallback;
+            }
+        }
+
+        let users = readStoredJson(localStorage, 'users', []);
+        let currentUser = readStoredJson(localStorage, 'currentUser', null);
+        let products = readStoredJson(localStorage, 'products', []);
+        let cart = readStoredJson(localStorage, 'cart', []);
+        let wishlist = readStoredJson(localStorage, 'wishlist', []);
+        let orders = readStoredJson(localStorage, 'orders', []);
         let isAdmin = false;
         let currentLanguage = localStorage.getItem('language') || 'uz';
         let currentCategory = 'all';
         let supabaseAuthUser = null;
-        let pendingAuth = JSON.parse(sessionStorage.getItem('pendingAuth') || 'null');
+        let pendingAuth = readStoredJson(sessionStorage, 'pendingAuth', null);
         let visibleProductCount = 0;
         let catalogObserver = null;
         let productCardsTween = null;
@@ -2035,7 +2046,7 @@
         const ADMIN_EMAIL = 'sabinastyle77@gmail.com';
         const SUPABASE_URL = 'https://lqzigxdjygbzkylhmrsq.supabase.co';
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_RLCfftqzPAWUV6oUJeDXkQ_R6DUhVEs';
-        const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
+        let supabaseClient = null;
 
         const translations = {
             uz: {
@@ -2393,7 +2404,8 @@
         }
 
         // Check if user is logged in
-        window.onload = async function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
             setupPhoneFormatting();
             setLanguage(currentLanguage);
             try {
@@ -2402,7 +2414,7 @@
             } catch (error) {
                 console.warn('Supabase session unavailable:', error);
             }
-            if (currentUser) {
+            if (currentUser && !document.getElementById('mainSite').classList.contains('show')) {
                 showMainSite();
             } else if (pendingAuth?.user?.email) {
                 showOtpForm();
@@ -2436,7 +2448,7 @@
                     document.getElementById('userMenuButton').focus();
                 }
             });
-        };
+        });
 
         // Auth Functions
         function switchAuthTab(tab) {
@@ -3165,6 +3177,12 @@
         }
 
         // Close dropdowns when clicking outside
+        if (currentUser) {
+            showMainSite();
+        } else {
+            document.body.classList.add('auth-ready');
+        }
+
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.user-menu')) {
                 closeUserDropdown();
