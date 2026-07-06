@@ -2614,12 +2614,12 @@
             pendingAuth = { mode: 'register', user };
             sessionStorage.setItem('pendingAuth', JSON.stringify(pendingAuth));
             setRegisterSubmitting(true);
+            showOtpForm();
+            showToast(t('sendingCode'), 'success');
             if (await sendPendingOtp(false)) {
-                showOtpForm();
                 showToast(t('otpSent'), 'success');
-            } else {
-                setRegisterSubmitting(false);
             }
+            setRegisterSubmitting(false);
         }
 
         async function handleLogin(e) {
@@ -2644,8 +2644,9 @@
             if (isAdminEmail && !hasVerifiedAdminSession) {
                 pendingAuth = { mode: 'login', user };
                 sessionStorage.setItem('pendingAuth', JSON.stringify(pendingAuth));
+                showOtpForm();
+                showToast(t('sendingCode'), 'success');
                 if (await sendPendingOtp(false)) {
-                    showOtpForm();
                     showToast(t('otpSent'), 'success');
                 }
                 return;
