@@ -2022,9 +2022,32 @@
                 return value ? JSON.parse(value) : fallback;
             } catch (error) {
                 console.warn(`Invalid saved data for ${key}; resetting it.`, error);
-                storage.removeItem(key);
+                try { storage.removeItem(key); } catch (_) {}
                 return fallback;
             }
+        }
+
+        function readStoredText(storage, key, fallback = '') {
+            try {
+                return storage.getItem(key) || fallback;
+            } catch (error) {
+                console.warn(`Saved value for ${key} is unavailable.`, error);
+                return fallback;
+            }
+        }
+
+        function writeStoredValue(storage, key, value) {
+            try {
+                storage.setItem(key, value);
+                return true;
+            } catch (error) {
+                console.warn(`Could not save ${key}.`, error);
+                return false;
+            }
+        }
+
+        function removeStoredValue(storage, key) {
+            try { storage.removeItem(key); } catch (error) { console.warn(`Could not remove ${key}.`, error); }
         }
 
         let users = readStoredJson(localStorage, 'users', []);
@@ -2034,7 +2057,8 @@
         let wishlist = readStoredJson(localStorage, 'wishlist', []);
         let orders = readStoredJson(localStorage, 'orders', []);
         let isAdmin = false;
-        let currentLanguage = localStorage.getItem('language') || 'uz';
+        const savedLanguage = readStoredText(localStorage, 'language', 'uz');
+        let currentLanguage = savedLanguage === 'ru' ? 'ru' : 'uz';
         let currentCategory = 'all';
         let supabaseAuthUser = null;
         let pendingAuth = readStoredJson(sessionStorage, 'pendingAuth', null);
@@ -2177,7 +2201,7 @@
 
         function setLanguage(language) {
             currentLanguage = language;
-            localStorage.setItem('language', language);
+            writeStoredValue(localStorage, 'language', language);
             document.documentElement.lang = language;
             document.title = t('siteTitle');
             document.querySelectorAll('[data-i18n]').forEach(element => {
@@ -2262,10 +2286,10 @@
                 if (!response.ok) throw new Error(`Products API ${response.status}`);
                 const data = await response.json();
                 products = Array.isArray(data.products) ? data.products.map(normalizeProduct) : [];
-                localStorage.setItem('products', JSON.stringify(products));
+                writeStoredValue(localStorage, 'products', JSON.stringify(products));
             } catch (error) {
                 console.warn('Shared products unavailable, using local cache:', error);
-                products = (JSON.parse(localStorage.getItem('products')) || []).map(normalizeProduct);
+                products = readStoredJson(localStorage, 'products', []).map(normalizeProduct);
             }
             renderProducts(currentCategory);
             if (isAdmin) renderAdminProducts();
@@ -2286,7 +2310,7 @@
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(data.error || `Products API ${response.status}`);
             products = Array.isArray(data.products) ? data.products.map(normalizeProduct) : normalized;
-            localStorage.setItem('products', JSON.stringify(products));
+            writeStoredValue(localStorage, 'products', JSON.stringify(products));
         }
 
         function motionAllowed() {
@@ -2420,7 +2444,7 @@
                 showOtpForm();
             } else if (users.length > 0) {
                 switchAuthTab('login');
-                const lastLoginUser = localStorage.getItem('lastLoginUser');
+                const lastLoginUser = readStoredText(localStorage, 'lastLoginUser');
                 const lastUser = users.find(user => user.email === lastLoginUser || user.phone === lastLoginUser) || users[users.length - 1];
                 document.getElementById('loginEmail').value = lastLoginUser || lastUser.email || lastUser.phone || '';
             }
@@ -2519,7 +2543,7 @@
         function cancelOtpVerification() {
             const mode = pendingAuth?.mode || 'register';
             pendingAuth = null;
-            sessionStorage.removeItem('pendingAuth');
+            removeStoredValue(sessionStorage, 'pendingAuth');
             setRegisterSubmitting(false);
             switchAuthTab(mode === 'login' ? 'login' : 'register');
         }
@@ -2557,13 +2581,13 @@
             const user = pendingAuth.user;
             if (pendingAuth.mode === 'register') {
                 users.push(user);
-                localStorage.setItem('users', JSON.stringify(users));
+                writeStoredValue(localStorage, 'users', JSON.stringify(users));
             }
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            localStorage.setItem('lastLoginUser', user.email || user.phone);
+            writeStoredValue(localStorage, 'currentUser', JSON.stringify(user));
+            writeStoredValue(localStorage, 'lastLoginUser', user.email || user.phone);
             currentUser = user;
             pendingAuth = null;
-            sessionStorage.removeItem('pendingAuth');
+            removeStoredValue(sessionStorage, 'pendingAuth');
             showToast(t('otpVerified'), 'success');
             setTimeout(showMainSite, 600);
         }
@@ -2612,7 +2636,7 @@
             }
             
             pendingAuth = { mode: 'register', user };
-            sessionStorage.setItem('pendingAuth', JSON.stringify(pendingAuth));
+            writeStoredValue(sessionStorage, 'pendingAuth', JSON.stringify(pendingAuth));
             setRegisterSubmitting(true);
             showOtpForm();
             showToast(t('sendingCode'), 'success');
@@ -2643,7 +2667,7 @@
             const hasVerifiedAdminSession = supabaseAuthUser?.email?.trim().toLowerCase() === ADMIN_EMAIL;
             if (isAdminEmail && !hasVerifiedAdminSession) {
                 pendingAuth = { mode: 'login', user };
-                sessionStorage.setItem('pendingAuth', JSON.stringify(pendingAuth));
+                writeStoredValue(sessionStorage, 'pendingAuth', JSON.stringify(pendingAuth));
                 showOtpForm();
                 showToast(t('sendingCode'), 'success');
                 if (await sendPendingOtp(false)) {
@@ -2652,8 +2676,8 @@
                 return;
             }
             
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            localStorage.setItem('lastLoginUser', user.email || user.phone);
+            writeStoredValue(localStorage, 'currentUser', JSON.stringify(user));
+            writeStoredValue(localStorage, 'lastLoginUser', user.email || user.phone);
             currentUser = user;
             
             showToast(t('welcomeBack'), 'success');
@@ -2680,7 +2704,7 @@
         }
 
         async function logout() {
-            localStorage.removeItem('currentUser');
+            removeStoredValue(localStorage, 'currentUser');
             currentUser = null;
             supabaseAuthUser = null;
             if (supabaseClient) await supabaseClient.auth.signOut().catch(error => console.warn('Supabase sign out failed:', error));
@@ -2833,7 +2857,7 @@
                 });
             }
             
-            localStorage.setItem('cart', JSON.stringify(cart));
+            writeStoredValue(localStorage, 'cart', JSON.stringify(cart));
             updateCart();
             showToast(t('addedToCart'), 'success');
         }
@@ -2873,7 +2897,7 @@
 
         function removeFromCart(index) {
             cart.splice(index, 1);
-            localStorage.setItem('cart', JSON.stringify(cart));
+            writeStoredValue(localStorage, 'cart', JSON.stringify(cart));
             updateCart();
             showToast(t('removedFromCart'), 'success');
         }
@@ -2929,10 +2953,10 @@
             };
             
             orders.push(order);
-            localStorage.setItem('orders', JSON.stringify(orders));
+            writeStoredValue(localStorage, 'orders', JSON.stringify(orders));
             
             cart = [];
-            localStorage.setItem('cart', JSON.stringify(cart));
+            writeStoredValue(localStorage, 'cart', JSON.stringify(cart));
             
             closeModal('checkoutModal');
             updateCart();
@@ -3074,8 +3098,8 @@
                 await saveSharedProducts(products.filter(item => item.id !== productId));
                 cart = cart.filter(item => item.id !== productId);
                 wishlist = wishlist.filter(item => item.id !== productId);
-                localStorage.setItem('cart', JSON.stringify(cart));
-                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                writeStoredValue(localStorage, 'cart', JSON.stringify(cart));
+                writeStoredValue(localStorage, 'wishlist', JSON.stringify(wishlist));
                 renderProducts(currentCategory);
                 updateCart();
                 updateWishlist();
