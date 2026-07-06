@@ -2084,6 +2084,10 @@
         let currentCategory = 'all';
         let supabaseAuthUser = null;
         let pendingAuth = readStoredJson(sessionStorage, 'pendingAuth', null);
+        if (pendingAuth?.user?.email?.trim().toLowerCase() === 'sabinastyle77@gmail.com') {
+            pendingAuth = null;
+            removeStoredValue(sessionStorage, 'pendingAuth');
+        }
         let otpResendTimer = null;
         let visibleProductCount = 0;
         let catalogObserver = null;
@@ -2566,11 +2570,11 @@
             }, 1000);
         }
 
-        function setRegisterSubmitting(isSubmitting) {
+        function setRegisterSubmitting(isSubmitting, loadingKey = 'sendingCode') {
             const button = document.getElementById('registerSubmitButton');
             if (!button) return;
             button.disabled = isSubmitting;
-            button.textContent = isSubmitting ? t('sendingCode') : t('createAccount');
+            button.textContent = isSubmitting ? t(loadingKey) : t('createAccount');
         }
 
         function withTimeout(promise, timeoutMs = 15000) {
@@ -2673,6 +2677,23 @@
             setTimeout(showMainSite, 600);
         }
 
+        async function authenticateAdminPassword(email, password) {
+            if (!supabaseClient) {
+                showToast(t('invalidCredentials'), 'error');
+                return false;
+            }
+            try {
+                const { data, error } = await withTimeout(supabaseClient.auth.signInWithPassword({ email, password }));
+                if (error || data.user?.email?.trim().toLowerCase() !== ADMIN_EMAIL) throw error || new Error('Admin email mismatch');
+                supabaseAuthUser = data.user;
+                return true;
+            } catch (error) {
+                console.error('Admin password sign-in failed:', error);
+                showToast(t('invalidCredentials'), 'error');
+                return false;
+            }
+        }
+
         async function handleRegister(e) {
             e.preventDefault();
 
@@ -2716,9 +2737,7 @@
                 return;
             }
 
-            // Temporary mode until a transactional email domain is connected:
-            // regular customers can register locally, while the administrator
-            // must still prove ownership of the protected email through Supabase OTP.
+            // Regular customers register locally until transactional email is connected.
             if (user.email !== ADMIN_EMAIL) {
                 users.push(user);
                 writeStoredValue(localStorage, 'users', JSON.stringify(users));
@@ -2729,16 +2748,18 @@
                 setTimeout(showMainSite, 450);
                 return;
             }
-            
-            pendingAuth = { mode: 'register', user };
-            writeStoredValue(sessionStorage, 'pendingAuth', JSON.stringify(pendingAuth));
-            setRegisterSubmitting(true);
-            showOtpForm();
-            showToast(t('sendingCode'), 'success');
-            if (await sendPendingOtp(false)) {
-                showToast(t('otpSent'), 'success');
-            }
+
+            setRegisterSubmitting(true, 'verifying');
+            const adminAuthenticated = await authenticateAdminPassword(user.email, password);
             setRegisterSubmitting(false);
+            if (!adminAuthenticated) return;
+            users.push(user);
+            writeStoredValue(localStorage, 'users', JSON.stringify(users));
+            writeStoredValue(localStorage, 'currentUser', JSON.stringify(user));
+            writeStoredValue(localStorage, 'lastLoginUser', user.email);
+            currentUser = user;
+            showToast(t('registrationSuccess'), 'success');
+            setTimeout(showMainSite, 450);
         }
 
         async function handleLogin(e) {
@@ -2747,7 +2768,8 @@
             const emailOrPhone = document.getElementById('loginEmail').value.trim();
             const normalizedEmail = emailOrPhone.toLowerCase();
             const normalizedPhone = formatUzbekPhone(emailOrPhone, true);
-            const password = btoa(document.getElementById('loginPassword').value);
+            const rawPassword = document.getElementById('loginPassword').value;
+            const password = btoa(rawPassword);
             
             const user = users.find(u => 
                 (u.email?.toLowerCase() === normalizedEmail || u.phone === emailOrPhone || formatUzbekPhone(u.phone, true) === normalizedPhone) && u.password === password
@@ -2761,14 +2783,7 @@
             const isAdminEmail = user.email?.trim().toLowerCase() === ADMIN_EMAIL;
             const hasVerifiedAdminSession = supabaseAuthUser?.email?.trim().toLowerCase() === ADMIN_EMAIL;
             if (isAdminEmail && !hasVerifiedAdminSession) {
-                pendingAuth = { mode: 'login', user };
-                writeStoredValue(sessionStorage, 'pendingAuth', JSON.stringify(pendingAuth));
-                showOtpForm();
-                showToast(t('sendingCode'), 'success');
-                if (await sendPendingOtp(false)) {
-                    showToast(t('otpSent'), 'success');
-                }
-                return;
+                if (!(await authenticateAdminPassword(user.email, rawPassword))) return;
             }
             
             writeStoredValue(localStorage, 'currentUser', JSON.stringify(user));
