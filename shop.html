@@ -242,6 +242,12 @@
             font-weight: 600;
         }
 
+        .btn-primary:disabled {
+            cursor: wait;
+            opacity: 0.68;
+            box-shadow: none;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -1698,7 +1704,7 @@
                 </div>
 
                 <!-- Register Form -->
-                <form class="auth-form active" id="registerForm" onsubmit="handleRegister(event)">
+                <form class="auth-form active" id="registerForm" onsubmit="handleRegister(event)" novalidate>
                     <div class="form-group">
                         <label data-i18n="fullName">To‘liq ism *</label>
                         <input type="text" id="regName" required data-i18n-placeholder="fullNamePlaceholder" placeholder="To‘liq ismingizni kiriting">
@@ -1731,7 +1737,7 @@
                         <input type="checkbox" id="regTerms" required>
                         <label for="regTerms" data-i18n="termsAgreement">Foydalanish shartlari va maxfiylik siyosatiga roziman *</label>
                     </div>
-                    <button type="submit" class="btn-primary" data-i18n="createAccount">Hisob yaratish</button>
+                    <button type="submit" class="btn-primary" id="registerSubmitButton" data-i18n="createAccount">Hisob yaratish</button>
                 </form>
 
                 <!-- Login Form -->
@@ -2070,7 +2076,8 @@
                 otpSentTo: "Tasdiqlash kodi yuborildi:", otpCode: "6 xonali kod *", verifyOtp: "Kodni tasdiqlash",
                 resendOtp: "Kodni qayta yuborish", changeEmail: "Emailni o‘zgartirish", otpSent: "Tasdiqlash kodi emailingizga yuborildi",
                 otpVerified: "Email muvaffaqiyatli tasdiqlandi", otpInvalid: "Kod noto‘g‘ri yoki muddati tugagan",
-                otpSendError: "Kod yuborilmadi. Email va SMTP sozlamalarini tekshiring.", verifying: "Tekshirilmoqda...",
+                otpSendError: "Kod yuborilmadi. Internet, email va SMTP sozlamalarini tekshiring.", verifying: "Tekshirilmoqda...",
+                sendingCode: "Kod yuborilmoqda...", fillRequired: "Barcha majburiy maydonlarni to‘ldiring",
                 invalidCredentials: "Email, telefon yoki parol noto‘g‘ri", welcomeBack: "Xush kelibsiz!",
                 addedToCart: "Savatga qo‘shildi", removedFromCart: "Savatdan olib tashlandi",
                 wishlistItems: "Sevimlilar: {count} ta", cartIsEmpty: "Savatingiz bo‘sh!",
@@ -2127,7 +2134,8 @@
                 otpSentTo: "Код подтверждения отправлен на:", otpCode: "Шестизначный код *", verifyOtp: "Подтвердить код",
                 resendOtp: "Отправить код повторно", changeEmail: "Изменить email", otpSent: "Код подтверждения отправлен на вашу почту",
                 otpVerified: "Email успешно подтверждён", otpInvalid: "Неверный или просроченный код",
-                otpSendError: "Не удалось отправить код. Проверьте email и настройки SMTP.", verifying: "Проверяем...",
+                otpSendError: "Не удалось отправить код. Проверьте интернет, email и настройки SMTP.", verifying: "Проверяем...",
+                sendingCode: "Отправляем код...", fillRequired: "Заполните все обязательные поля",
                 invalidCredentials: "Неверный email, телефон или пароль", welcomeBack: "С возвращением!",
                 addedToCart: "Добавлено в корзину", removedFromCart: "Удалено из корзины",
                 wishlistItems: "В избранном: {count}", cartIsEmpty: "Корзина пуста!",
@@ -2454,20 +2462,36 @@
             requestAnimationFrame(() => document.getElementById('otpCode').focus());
         }
 
+        function setRegisterSubmitting(isSubmitting) {
+            const button = document.getElementById('registerSubmitButton');
+            if (!button) return;
+            button.disabled = isSubmitting;
+            button.textContent = isSubmitting ? t('sendingCode') : t('createAccount');
+        }
+
+        function withTimeout(promise, timeoutMs = 15000) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeoutMs))
+            ]);
+        }
+
         async function sendPendingOtp(showSuccess = true) {
             if (!pendingAuth?.user?.email) return false;
             if (!supabaseClient) {
                 showToast(t('otpSendError'), 'error');
                 return false;
             }
-            const { error } = await supabaseClient.auth.signInWithOtp({
-                email: pendingAuth.user.email,
-                options: {
-                    shouldCreateUser: true,
-                    data: { name: pendingAuth.user.name || '' }
-                }
-            });
-            if (error) {
+            try {
+                const { error } = await withTimeout(supabaseClient.auth.signInWithOtp({
+                    email: pendingAuth.user.email,
+                    options: {
+                        shouldCreateUser: true,
+                        data: { name: pendingAuth.user.name || '' }
+                    }
+                }));
+                if (error) throw error;
+            } catch (error) {
                 console.error('OTP send failed:', error);
                 showToast(t('otpSendError'), 'error');
                 return false;
@@ -2484,6 +2508,7 @@
             const mode = pendingAuth?.mode || 'register';
             pendingAuth = null;
             sessionStorage.removeItem('pendingAuth');
+            setRegisterSubmitting(false);
             switchAuthTab(mode === 'login' ? 'login' : 'register');
         }
 
@@ -2533,6 +2558,15 @@
 
         async function handleRegister(e) {
             e.preventDefault();
+
+            const form = e.currentTarget;
+            if (!form.checkValidity()) {
+                const firstInvalidField = form.querySelector(':invalid');
+                firstInvalidField?.focus();
+                firstInvalidField?.reportValidity();
+                showToast(t('fillRequired'), 'error');
+                return;
+            }
             
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
@@ -2567,9 +2601,12 @@
             
             pendingAuth = { mode: 'register', user };
             sessionStorage.setItem('pendingAuth', JSON.stringify(pendingAuth));
+            setRegisterSubmitting(true);
             if (await sendPendingOtp(false)) {
                 showOtpForm();
                 showToast(t('otpSent'), 'success');
+            } else {
+                setRegisterSubmitting(false);
             }
         }
 
