@@ -2715,6 +2715,20 @@
                 showToast(t('userExists'), 'error');
                 return;
             }
+
+            // Temporary mode until a transactional email domain is connected:
+            // regular customers can register locally, while the administrator
+            // must still prove ownership of the protected email through Supabase OTP.
+            if (user.email !== ADMIN_EMAIL) {
+                users.push(user);
+                writeStoredValue(localStorage, 'users', JSON.stringify(users));
+                writeStoredValue(localStorage, 'currentUser', JSON.stringify(user));
+                writeStoredValue(localStorage, 'lastLoginUser', user.email || user.phone);
+                currentUser = user;
+                showToast(t('registrationSuccess'), 'success');
+                setTimeout(showMainSite, 450);
+                return;
+            }
             
             pendingAuth = { mode: 'register', user };
             writeStoredValue(sessionStorage, 'pendingAuth', JSON.stringify(pendingAuth));
