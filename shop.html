@@ -214,6 +214,21 @@
             overflow-wrap: anywhere;
         }
 
+        .otp-delivery-status {
+            min-height: 24px;
+            margin: -8px 0 16px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(126, 200, 227, 0.14);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.45;
+            text-align: center;
+        }
+
+        .otp-delivery-status.success { background: rgba(34, 197, 94, 0.12); color: #166534; }
+        .otp-delivery-status.error { background: rgba(239, 68, 68, 0.11); color: #991B1B; }
+
         .otp-code-input {
             min-height: 56px;
             font-size: 1.35rem;
@@ -240,6 +255,12 @@
             cursor: pointer;
             font: inherit;
             font-weight: 600;
+        }
+
+        .auth-link-btn:disabled {
+            cursor: not-allowed;
+            color: var(--text-secondary);
+            opacity: 0.65;
         }
 
         .btn-primary:disabled {
@@ -1762,13 +1783,14 @@
                         <span data-i18n="otpSentTo">Tasdiqlash kodi yuborildi:</span><br>
                         <span class="otp-email" id="otpEmailDisplay"></span>
                     </p>
+                    <div class="otp-delivery-status" id="otpDeliveryStatus" role="status" aria-live="polite"></div>
                     <div class="form-group">
                         <label for="otpCode" data-i18n="otpCode">6 xonali kod *</label>
                         <input class="otp-code-input" type="text" id="otpCode" required inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000">
                     </div>
                     <button type="submit" class="btn-primary" id="verifyOtpButton" data-i18n="verifyOtp">Kodni tasdiqlash</button>
                     <div class="auth-secondary-actions">
-                        <button type="button" class="auth-link-btn" onclick="resendEmailOtp()" data-i18n="resendOtp">Kodni qayta yuborish</button>
+                        <button type="button" class="auth-link-btn" id="resendOtpButton" onclick="resendEmailOtp()" data-i18n="resendOtp">Kodni qayta yuborish</button>
                         <button type="button" class="auth-link-btn" onclick="cancelOtpVerification()" data-i18n="changeEmail">Emailni o‘zgartirish</button>
                     </div>
                 </form>
@@ -2062,6 +2084,7 @@
         let currentCategory = 'all';
         let supabaseAuthUser = null;
         let pendingAuth = readStoredJson(sessionStorage, 'pendingAuth', null);
+        let otpResendTimer = null;
         let visibleProductCount = 0;
         let catalogObserver = null;
         let productCardsTween = null;
@@ -2110,6 +2133,8 @@
                 registrationSuccess: "Ro‘yxatdan o‘tish muvaffaqiyatli",
                 otpSentTo: "Tasdiqlash kodi yuborildi:", otpCode: "6 xonali kod *", verifyOtp: "Kodni tasdiqlash",
                 resendOtp: "Kodni qayta yuborish", changeEmail: "Emailni o‘zgartirish", otpSent: "Tasdiqlash kodi emailingizga yuborildi",
+                otpSendingStatus: "Kod emailingizga yuborilmoqda…", otpSentStatus: "Kod yuborildi. Kiruvchi xatlar va spam papkasini tekshiring.",
+                otpErrorStatus: "Kod yuborilmadi. Qayta yuborishni bosing yoki emailni o‘zgartiring.", resendIn: "Qayta yuborish ({seconds} s)",
                 otpVerified: "Email muvaffaqiyatli tasdiqlandi", otpInvalid: "Kod noto‘g‘ri yoki muddati tugagan",
                 otpSendError: "Kod yuborilmadi. Internet, email va SMTP sozlamalarini tekshiring.", verifying: "Tekshirilmoqda...",
                 sendingCode: "Kod yuborilmoqda...", fillRequired: "Barcha majburiy maydonlarni to‘ldiring",
@@ -2168,6 +2193,8 @@
                 registrationSuccess: "Регистрация прошла успешно",
                 otpSentTo: "Код подтверждения отправлен на:", otpCode: "Шестизначный код *", verifyOtp: "Подтвердить код",
                 resendOtp: "Отправить код повторно", changeEmail: "Изменить email", otpSent: "Код подтверждения отправлен на вашу почту",
+                otpSendingStatus: "Отправляем код на вашу почту…", otpSentStatus: "Код отправлен. Проверьте входящие письма и папку «Спам».",
+                otpErrorStatus: "Код не отправлен. Повторите отправку или измените email.", resendIn: "Повторить через {seconds} с",
                 otpVerified: "Email успешно подтверждён", otpInvalid: "Неверный или просроченный код",
                 otpSendError: "Не удалось отправить код. Проверьте интернет, email и настройки SMTP.", verifying: "Проверяем...",
                 sendingCode: "Отправляем код...", fillRequired: "Заполните все обязательные поля",
@@ -2221,6 +2248,10 @@
             renderProducts(currentCategory, false);
             updateCart();
             if (isAdmin) renderAdminProducts();
+            const otpStatus = document.getElementById('otpDeliveryStatus');
+            if (otpStatus?.dataset.type) setOtpDeliveryStatus(otpStatus.dataset.type);
+            const resendButton = document.getElementById('resendOtpButton');
+            if (resendButton) setResendButton(Number(resendButton.dataset.seconds || 0));
         }
 
         function formatUzbekPhone(value, includePrefix = false) {
@@ -2492,10 +2523,47 @@
             if (!pendingAuth?.user?.email) return;
             document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
-            document.getElementById('otpEmailDisplay').textContent = pendingAuth.user.email;
+            document.getElementById('otpEmailDisplay').textContent = maskEmail(pendingAuth.user.email);
             document.getElementById('otpForm').classList.add('active');
             document.getElementById('otpCode').value = '';
+            if (!document.getElementById('otpDeliveryStatus').dataset.type) setOtpDeliveryStatus('success');
             requestAnimationFrame(() => document.getElementById('otpCode').focus());
+        }
+
+        function maskEmail(email) {
+            const [name = '', domain = ''] = String(email).split('@');
+            const visible = name.slice(0, Math.min(3, name.length));
+            return `${visible}${'*'.repeat(Math.max(3, name.length - visible.length))}@${domain}`;
+        }
+
+        function setOtpDeliveryStatus(type) {
+            const status = document.getElementById('otpDeliveryStatus');
+            if (!status) return;
+            status.dataset.type = type;
+            status.className = `otp-delivery-status${type === 'success' || type === 'error' ? ` ${type}` : ''}`;
+            status.textContent = t(type === 'success' ? 'otpSentStatus' : type === 'error' ? 'otpErrorStatus' : 'otpSendingStatus');
+        }
+
+        function setResendButton(seconds = 0) {
+            const button = document.getElementById('resendOtpButton');
+            if (!button) return;
+            button.dataset.seconds = String(Math.max(0, seconds));
+            button.disabled = seconds > 0;
+            button.textContent = seconds > 0 ? t('resendIn', { seconds }) : t('resendOtp');
+        }
+
+        function startOtpResendCooldown(seconds = 60) {
+            clearInterval(otpResendTimer);
+            let remaining = seconds;
+            setResendButton(remaining);
+            otpResendTimer = setInterval(() => {
+                remaining -= 1;
+                setResendButton(remaining);
+                if (remaining <= 0) {
+                    clearInterval(otpResendTimer);
+                    otpResendTimer = null;
+                }
+            }, 1000);
         }
 
         function setRegisterSubmitting(isSubmitting) {
@@ -2514,7 +2582,11 @@
 
         async function sendPendingOtp(showSuccess = true) {
             if (!pendingAuth?.user?.email) return false;
+            setOtpDeliveryStatus('sending');
+            setResendButton(1);
             if (!supabaseClient) {
+                setOtpDeliveryStatus('error');
+                setResendButton(0);
                 showToast(t('otpSendError'), 'error');
                 return false;
             }
@@ -2529,9 +2601,13 @@
                 if (error) throw error;
             } catch (error) {
                 console.error('OTP send failed:', error);
+                setOtpDeliveryStatus('error');
+                setResendButton(0);
                 showToast(t('otpSendError'), 'error');
                 return false;
             }
+            setOtpDeliveryStatus('success');
+            startOtpResendCooldown();
             if (showSuccess) showToast(t('otpSent'), 'success');
             return true;
         }
@@ -2542,6 +2618,9 @@
 
         function cancelOtpVerification() {
             const mode = pendingAuth?.mode || 'register';
+            clearInterval(otpResendTimer);
+            otpResendTimer = null;
+            setResendButton(0);
             pendingAuth = null;
             removeStoredValue(sessionStorage, 'pendingAuth');
             setRegisterSubmitting(false);
@@ -2588,6 +2667,8 @@
             currentUser = user;
             pendingAuth = null;
             removeStoredValue(sessionStorage, 'pendingAuth');
+            clearInterval(otpResendTimer);
+            otpResendTimer = null;
             showToast(t('otpVerified'), 'success');
             setTimeout(showMainSite, 600);
         }
