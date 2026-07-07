@@ -2099,6 +2099,38 @@
         </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 data-i18n="editProfile">👤 Profilni tahrirlash</h2>
+                <button class="close-modal" onclick="closeModal('profileModal')" aria-label="Yopish" data-i18n-aria-label="closeLabel">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="profileForm" onsubmit="saveProfile(event)">
+                    <div class="form-group">
+                        <label data-i18n="yourName">Ismingiz</label>
+                        <input type="text" id="profileName" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="phone">Telefon</label>
+                        <input type="tel" id="profilePhone" required inputmode="numeric" maxlength="17" autocomplete="tel">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="email">Email</label>
+                        <input type="email" id="profileEmail" required autocomplete="email">
+                        <small class="form-helper" id="profileEmailHelp" data-i18n="adminEmailLocked" hidden>Administrator emailini o‘zgartirib bo‘lmaydi.</small>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="deliveryAddress">Yetkazib berish manzili</label>
+                        <textarea id="profileAddress" required rows="3" autocomplete="street-address"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary" data-i18n="saveChanges">O‘zgarishlarni saqlash</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Modal -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal">
@@ -2279,6 +2311,10 @@
                 reviews: "{count} ta sharh",
                 loadMore: "Yana ko‘rsatish", showingProducts: "{shown} / {total} ta mahsulot ko‘rsatildi", allProductsShown: "Barcha {total} ta mahsulot ko‘rsatildi",
                 userExists: "Bunday foydalanuvchi mavjud", invalidPhone: "Telefon raqamini 90 123 45 67 formatida kiriting",
+                editProfile: "👤 Profilni tahrirlash", saveChanges: "O‘zgarishlarni saqlash",
+                profileUpdated: "Profil ma’lumotlari saqlandi",
+                adminEmailLocked: "Administrator emailini o‘zgartirib bo‘lmaydi.",
+                adminEmailReserved: "Bu email faqat administrator uchun.",
                 registrationSuccess: "Ro‘yxatdan o‘tish muvaffaqiyatli",
                 otpSentTo: "Tasdiqlash kodi yuborildi:", otpCode: "Email kodi *", verifyOtp: "Kodni tasdiqlash",
                 resendOtp: "Kodni qayta yuborish", changeEmail: "Emailni o‘zgartirish", otpSent: "Tasdiqlash kodi emailingizga yuborildi",
@@ -2343,6 +2379,10 @@
                 reviews: "{count} отзывов",
                 loadMore: "Показать ещё", showingProducts: "Показано {shown} из {total} товаров", allProductsShown: "Показаны все товары: {total}",
                 userExists: "Такой пользователь уже существует", invalidPhone: "Введите номер в формате 90 123 45 67",
+                editProfile: "👤 Редактировать профиль", saveChanges: "Сохранить изменения",
+                profileUpdated: "Профиль сохранён",
+                adminEmailLocked: "Email администратора нельзя изменить.",
+                adminEmailReserved: "Этот email доступен только администратору.",
                 registrationSuccess: "Регистрация прошла успешно",
                 otpSentTo: "Код подтверждения отправлен на:", otpCode: "Код из email *", verifyOtp: "Подтвердить код",
                 resendOtp: "Отправить код повторно", changeEmail: "Изменить email", otpSent: "Код подтверждения отправлен на вашу почту",
@@ -2421,11 +2461,15 @@
         function setupPhoneFormatting() {
             const registrationPhone = document.getElementById('regPhone');
             const checkoutPhone = document.getElementById('checkoutPhone');
+            const profilePhone = document.getElementById('profilePhone');
             registrationPhone.addEventListener('input', () => {
                 registrationPhone.value = formatUzbekPhone(registrationPhone.value);
             });
             checkoutPhone.addEventListener('input', () => {
                 checkoutPhone.value = formatUzbekPhone(checkoutPhone.value, true);
+            });
+            profilePhone?.addEventListener('input', () => {
+                profilePhone.value = formatUzbekPhone(profilePhone.value, true);
             });
             const otpCodeInput = document.getElementById('otpCode');
             otpCodeInput?.addEventListener('input', () => {
@@ -3506,9 +3550,93 @@
             document.getElementById('userMenuButton').setAttribute('aria-expanded', 'false');
         }
 
+        function syncCurrentUserInterface() {
+            if (!currentUser) return;
+            const displayName = (currentUser.name || t('user')).trim();
+            document.getElementById('userNameDisplay').textContent = displayName.split(' ')[0] || t('user');
+            document.getElementById('userAvatar').textContent = displayName.charAt(0).toUpperCase() || 'S';
+            const checkoutName = document.getElementById('checkoutName');
+            const checkoutPhone = document.getElementById('checkoutPhone');
+            const checkoutAddress = document.getElementById('checkoutAddress');
+            if (checkoutName) checkoutName.value = currentUser.name || '';
+            if (checkoutPhone) checkoutPhone.value = currentUser.phone || '';
+            if (checkoutAddress) checkoutAddress.value = currentUser.address || '';
+            updateAdminAccess();
+        }
+
         function openProfile() {
-            alert(`${t('profile')}:\n\n${t('name')}: ${currentUser.name}\n${t('phone')}: ${currentUser.phone}\n${t('email')}: ${currentUser.email}\n${t('address')}: ${currentUser.address}`);
+            if (!currentUser) return;
+            const isAdminProfile = (currentUser.email || '').trim().toLowerCase() === ADMIN_EMAIL;
+            const emailInput = document.getElementById('profileEmail');
+            document.getElementById('profileName').value = currentUser.name || '';
+            document.getElementById('profilePhone').value = formatUzbekPhone(currentUser.phone || '', true);
+            emailInput.value = currentUser.email || '';
+            emailInput.disabled = isAdminProfile;
+            document.getElementById('profileEmailHelp').hidden = !isAdminProfile;
+            document.getElementById('profileAddress').value = currentUser.address || '';
             closeUserDropdown();
+            document.getElementById('profileModal').classList.add('active');
+            document.body.classList.add('modal-open');
+            animateModal('profileModal');
+            requestAnimationFrame(() => document.getElementById('profileName').focus());
+        }
+
+        function saveProfile(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+
+            const oldEmail = (currentUser.email || '').trim().toLowerCase();
+            const isAdminProfile = oldEmail === ADMIN_EMAIL;
+            const name = document.getElementById('profileName').value.trim();
+            const phone = formatUzbekPhone(document.getElementById('profilePhone').value, true);
+            const phoneDigits = phone.replace(/\D/g, '').replace(/^998/, '');
+            const nextEmail = isAdminProfile ? ADMIN_EMAIL : document.getElementById('profileEmail').value.trim().toLowerCase();
+            const address = document.getElementById('profileAddress').value.trim();
+
+            if (!name || !phone || !nextEmail || !address) {
+                showToast(t('fillRequired'), 'error');
+                return;
+            }
+            if (phoneDigits.length !== 9) {
+                showToast(t('invalidPhone'), 'error');
+                document.getElementById('profilePhone').focus();
+                return;
+            }
+            if (!isAdminProfile && nextEmail === ADMIN_EMAIL) {
+                showToast(t('adminEmailReserved'), 'error');
+                document.getElementById('profileEmail').focus();
+                return;
+            }
+
+            const currentId = currentUser.id;
+            const isDuplicate = users.some(user => {
+                const sameUser = String(user.id) === String(currentId);
+                const userEmail = (user.email || '').trim().toLowerCase();
+                const userPhone = formatUzbekPhone(user.phone || '', true);
+                return !sameUser && (userEmail === nextEmail || userPhone === phone);
+            });
+            if (isDuplicate) {
+                showToast(t('userExists'), 'error');
+                return;
+            }
+
+            const updatedUser = {
+                ...currentUser,
+                name,
+                phone,
+                email: nextEmail,
+                address
+            };
+            currentUser = updatedUser;
+            users = users.map(user => String(user.id) === String(currentId) ? { ...user, ...updatedUser } : user);
+            if (!users.some(user => String(user.id) === String(currentId))) users.push(updatedUser);
+
+            writeStoredValue(localStorage, 'users', JSON.stringify(users));
+            writeStoredValue(localStorage, 'currentUser', JSON.stringify(updatedUser));
+            writeStoredValue(localStorage, 'lastLoginUser', updatedUser.email || updatedUser.phone);
+            syncCurrentUserInterface();
+            showToast(t('profileUpdated'), 'success');
+            closeModal('profileModal');
         }
 
         function openOrders() {
