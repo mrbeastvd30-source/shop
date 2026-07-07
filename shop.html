@@ -914,33 +914,6 @@
             margin-bottom: 15px;
         }
 
-        .product-price .old-price {
-            text-decoration: line-through;
-            color: var(--text-secondary);
-            font-size: 1rem;
-            margin-left: 10px;
-        }
-
-        .discount-chip {
-            color: #DB2777;
-            font-size: 0.86rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .installment-chip {
-            display: inline-flex;
-            width: fit-content;
-            margin: 0 0 10px;
-            padding: 5px 8px;
-            border-radius: 7px;
-            background: #FFF200;
-            color: #1F2937;
-            font-size: 0.84rem;
-            font-weight: 600;
-            line-height: 1;
-        }
-
         .product-rating {
             margin: 0 0 12px;
             color: var(--text-secondary);
@@ -1681,28 +1654,11 @@
                 align-items: baseline;
                 gap: 5px;
                 flex-wrap: wrap;
-                margin-bottom: 4px;
-                color: #7C3AED;
-                font-size: 1.08rem;
+                margin-bottom: 8px;
+                color: #65B9D7;
+                font-size: 1.1rem;
                 font-weight: 800;
                 line-height: 1.15;
-            }
-
-            .product-price .old-price {
-                margin-left: 0;
-                font-size: 0.72rem;
-            }
-
-            .discount-chip {
-                font-size: 0.74rem;
-            }
-
-            .installment-chip {
-                margin-bottom: 8px;
-                padding: 4px 6px;
-                border-radius: 6px;
-                font-size: 0.74rem;
-                line-height: 1.1;
             }
 
             .product-rating {
@@ -2316,7 +2272,7 @@
                 noFileChosen: "Fayl tanlanmagan", saveProduct: "💾 Mahsulotni saqlash",
                 manageProducts: "Mahsulotlarni boshqarish", delete: "O‘chirish", noProducts: "Hozircha mahsulotlar yo‘q",
                 noProductsFound: "Mahsulotlar topilmadi", addToCart: "Savatga qo‘shish", size: "O‘lcham",
-                perMonth: "{price}/oyiga", reviews: "{count} ta sharh",
+                reviews: "{count} ta sharh",
                 loadMore: "Yana ko‘rsatish", showingProducts: "{shown} / {total} ta mahsulot ko‘rsatildi", allProductsShown: "Barcha {total} ta mahsulot ko‘rsatildi",
                 userExists: "Bunday foydalanuvchi mavjud", invalidPhone: "Telefon raqamini 90 123 45 67 formatida kiriting",
                 registrationSuccess: "Ro‘yxatdan o‘tish muvaffaqiyatli",
@@ -2378,7 +2334,7 @@
                 noFileChosen: "Файл не выбран", saveProduct: "💾 Сохранить товар",
                 manageProducts: "Управление товарами", delete: "Удалить", noProducts: "Товаров пока нет",
                 noProductsFound: "Товары не найдены", addToCart: "Добавить в корзину", size: "Размер",
-                perMonth: "{price}/мес", reviews: "{count} отзывов",
+                reviews: "{count} отзывов",
                 loadMore: "Показать ещё", showingProducts: "Показано {shown} из {total} товаров", allProductsShown: "Показаны все товары: {total}",
                 userExists: "Такой пользователь уже существует", invalidPhone: "Введите номер в формате 90 123 45 67",
                 registrationSuccess: "Регистрация прошла успешно",
@@ -3064,16 +3020,6 @@
             return category === 'all' ? products : products.filter(product => product.category === category);
         }
 
-        function getProductDiscount(product) {
-            if (product.discount) return Math.round(Number(product.discount));
-            if (!product.oldPrice || !product.price || Number(product.oldPrice) <= Number(product.price)) return 0;
-            return Math.round((1 - Number(product.price) / Number(product.oldPrice)) * 100);
-        }
-
-        function getMonthlyPayment(product) {
-            return Math.max(1000, Math.ceil(Number(product.price || 0) / 12 / 100) * 100);
-        }
-
         function getProductRating(product) {
             const seed = Number(product.id) || 1;
             const rating = (4.5 + (seed % 5) / 10).toFixed(1);
@@ -3082,8 +3028,6 @@
         }
 
         function productCardTemplate(product) {
-            const discount = getProductDiscount(product);
-            const monthly = getMonthlyPayment(product);
             const rating = getProductRating(product);
             const isFavorite = wishlist.some(item => item.id === product.id);
             return `
@@ -3095,10 +3039,7 @@
                     <div class="product-info">
                         <div class="product-price">
                             ${formatPrice(product.price)}
-                            ${discount ? `<span class="discount-chip">↓${discount}%</span>` : ''}
-                            ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)}</span>` : ''}
                         </div>
-                        <div class="installment-chip">${t('perMonth', { price: formatPrice(monthly) })}</div>
                         <h3 class="product-title">${product.name}</h3>
                         <p class="product-description" data-product-description="${product.id}"></p>
                         <div class="product-rating">⭐ ${rating.rating} (${t('reviews', { count: rating.reviews })})</div>
