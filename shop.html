@@ -2438,10 +2438,32 @@
                 : 'Mahsulotlarni o‘zgartirib bo‘lmadi. sabinastyle77@gmail.com orqali qayta kiring va Vercel/Supabase sozlamalarini tekshiring.';
         }
 
+        async function restoreAdminSessionFromSavedPassword() {
+            if (!supabaseClient || !isAdminEmailAccount() || !currentUser?.password) return false;
+            try {
+                const savedPassword = atob(currentUser.password);
+                const { data, error } = await withTimeout(supabaseClient.auth.signInWithPassword({
+                    email: ADMIN_EMAIL,
+                    password: savedPassword
+                }), 8000);
+                if (error || data.user?.email?.trim().toLowerCase() !== ADMIN_EMAIL) throw error || new Error('Admin email mismatch');
+                supabaseAuthUser = data.user;
+                return true;
+            } catch (error) {
+                console.error('Admin session restore failed:', error);
+                return false;
+            }
+        }
+
         async function getAdminAccessToken() {
             if (!supabaseClient) throw new Error('Supabase client unavailable');
-            const { data } = await supabaseClient.auth.getSession();
-            const session = data.session;
+            let { data } = await supabaseClient.auth.getSession();
+            let session = data.session;
+            if (!session?.access_token || session.user?.email?.toLowerCase() !== ADMIN_EMAIL) {
+                await restoreAdminSessionFromSavedPassword();
+                ({ data } = await supabaseClient.auth.getSession());
+                session = data.session;
+            }
             if (!session?.access_token || session.user?.email?.toLowerCase() !== ADMIN_EMAIL) {
                 throw new Error('Verified admin session required');
             }
