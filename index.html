@@ -1785,8 +1785,8 @@
                     </p>
                     <div class="otp-delivery-status" id="otpDeliveryStatus" role="status" aria-live="polite"></div>
                     <div class="form-group">
-                        <label for="otpCode" data-i18n="otpCode">6 xonali kod *</label>
-                        <input class="otp-code-input" type="text" id="otpCode" required inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000">
+                        <label for="otpCode" data-i18n="otpCode">Email kodi *</label>
+                        <input class="otp-code-input" type="text" id="otpCode" required inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{6,8}" placeholder="00000000">
                     </div>
                     <button type="submit" class="btn-primary" id="verifyOtpButton" data-i18n="verifyOtp">Kodni tasdiqlash</button>
                     <div class="auth-secondary-actions">
@@ -2135,7 +2135,7 @@
                 loadMore: "Yana ko‘rsatish", showingProducts: "{shown} / {total} ta mahsulot ko‘rsatildi", allProductsShown: "Barcha {total} ta mahsulot ko‘rsatildi",
                 userExists: "Bunday foydalanuvchi mavjud", invalidPhone: "Telefon raqamini 90 123 45 67 formatida kiriting",
                 registrationSuccess: "Ro‘yxatdan o‘tish muvaffaqiyatli",
-                otpSentTo: "Tasdiqlash kodi yuborildi:", otpCode: "6 xonali kod *", verifyOtp: "Kodni tasdiqlash",
+                otpSentTo: "Tasdiqlash kodi yuborildi:", otpCode: "Email kodi *", verifyOtp: "Kodni tasdiqlash",
                 resendOtp: "Kodni qayta yuborish", changeEmail: "Emailni o‘zgartirish", otpSent: "Tasdiqlash kodi emailingizga yuborildi",
                 otpSendingStatus: "Kod emailingizga yuborilmoqda…", otpSentStatus: "Kod yuborildi. Kiruvchi xatlar va spam papkasini tekshiring.",
                 otpErrorStatus: "Kod yuborilmadi. Qayta yuborishni bosing yoki emailni o‘zgartiring.", resendIn: "Qayta yuborish ({seconds} s)",
@@ -2196,7 +2196,7 @@
                 loadMore: "Показать ещё", showingProducts: "Показано {shown} из {total} товаров", allProductsShown: "Показаны все товары: {total}",
                 userExists: "Такой пользователь уже существует", invalidPhone: "Введите номер в формате 90 123 45 67",
                 registrationSuccess: "Регистрация прошла успешно",
-                otpSentTo: "Код подтверждения отправлен на:", otpCode: "Шестизначный код *", verifyOtp: "Подтвердить код",
+                otpSentTo: "Код подтверждения отправлен на:", otpCode: "Код из email *", verifyOtp: "Подтвердить код",
                 resendOtp: "Отправить код повторно", changeEmail: "Изменить email", otpSent: "Код подтверждения отправлен на вашу почту",
                 otpSendingStatus: "Отправляем код на вашу почту…", otpSentStatus: "Код отправлен. Проверьте входящие письма и папку «Спам».",
                 otpErrorStatus: "Код не отправлен. Повторите отправку или измените email.", resendIn: "Повторить через {seconds} с",
@@ -2276,6 +2276,10 @@
             });
             checkoutPhone.addEventListener('input', () => {
                 checkoutPhone.value = formatUzbekPhone(checkoutPhone.value, true);
+            });
+            const otpCodeInput = document.getElementById('otpCode');
+            otpCodeInput?.addEventListener('input', () => {
+                otpCodeInput.value = otpCodeInput.value.replace(/\D/g, '').slice(0, 8);
             });
             document.getElementById('prodImage').addEventListener('change', event => {
                 document.getElementById('productFileName').textContent = event.target.files[0]?.name || t('noFileChosen');
@@ -2558,7 +2562,7 @@
             button.textContent = seconds > 0 ? t('resendIn', { seconds }) : t('resendOtp');
         }
 
-        function startOtpResendCooldown(seconds = 60) {
+        function startOtpResendCooldown(seconds = 20) {
             clearInterval(otpResendTimer);
             let remaining = seconds;
             setResendButton(remaining);
@@ -2647,6 +2651,13 @@
             button.textContent = t('verifying');
 
             const token = document.getElementById('otpCode').value.replace(/\D/g, '');
+            if (token.length < 6 || token.length > 8) {
+                button.disabled = false;
+                button.textContent = originalText;
+                showToast(t('otpInvalid'), 'error');
+                document.getElementById('otpCode').focus();
+                return;
+            }
             const { data, error } = await supabaseClient.auth.verifyOtp({
                 email: pendingAuth.user.email,
                 token,
@@ -2665,7 +2676,9 @@
             supabaseAuthUser = data.user;
             const user = pendingAuth.user;
             if (pendingAuth.mode === 'register') {
-                users.push(user);
+                const existingIndex = users.findIndex(savedUser => savedUser.email?.toLowerCase() === user.email?.toLowerCase() || savedUser.phone === user.phone);
+                if (existingIndex >= 0) users[existingIndex] = user;
+                else users.push(user);
                 writeStoredValue(localStorage, 'users', JSON.stringify(users));
             }
             writeStoredValue(localStorage, 'currentUser', JSON.stringify(user));
@@ -2742,15 +2755,18 @@
                 return;
             }
 
-            // Regular customers register locally until transactional email is connected.
+            // Regular customers must confirm email with Supabase OTP.
             if (user.email !== ADMIN_EMAIL) {
-                users.push(user);
-                writeStoredValue(localStorage, 'users', JSON.stringify(users));
-                writeStoredValue(localStorage, 'currentUser', JSON.stringify(user));
-                writeStoredValue(localStorage, 'lastLoginUser', user.email || user.phone);
-                currentUser = user;
-                showToast(t('registrationSuccess'), 'success');
-                setTimeout(showMainSite, 450);
+                pendingAuth = { mode: 'register', user };
+                writeStoredValue(sessionStorage, 'pendingAuth', JSON.stringify(pendingAuth));
+                showOtpForm();
+                setRegisterSubmitting(true, 'sendingCode');
+                const sent = await sendPendingOtp(true);
+                setRegisterSubmitting(false);
+                if (!sent) {
+                    setOtpDeliveryStatus('error');
+                    setResendButton(0);
+                }
                 return;
             }
 
