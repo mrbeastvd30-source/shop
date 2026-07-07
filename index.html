@@ -2259,11 +2259,8 @@
         let currentLanguage = savedLanguage === 'ru' ? 'ru' : 'uz';
         let currentCategory = 'all';
         let supabaseAuthUser = null;
-        let pendingAuth = readStoredJson(sessionStorage, 'pendingAuth', null);
-        if (pendingAuth?.user?.email?.trim().toLowerCase() === 'sabinastyle77@gmail.com') {
-            pendingAuth = null;
-            removeStoredValue(sessionStorage, 'pendingAuth');
-        }
+        let pendingAuth = null;
+        removeStoredValue(sessionStorage, 'pendingAuth');
         let otpResendTimer = null;
         let visibleProductCount = 0;
         let catalogObserver = null;
@@ -3000,29 +2997,6 @@
                 return;
             }
 
-            // Regular customers must confirm email with Supabase OTP.
-            if (user.email !== ADMIN_EMAIL) {
-                pendingAuth = { mode: 'register', user };
-                writeStoredValue(sessionStorage, 'pendingAuth', JSON.stringify(pendingAuth));
-                showOtpForm();
-                setRegisterSubmitting(true, 'sendingCode');
-                const sent = await sendPendingOtp(true);
-                setRegisterSubmitting(false);
-                if (!sent) {
-                    setOtpDeliveryStatus('error');
-                    setResendButton(0);
-                }
-                return;
-            }
-
-            setRegisterSubmitting(true, 'verifying');
-            let adminAuthenticated = false;
-            try {
-                adminAuthenticated = await authenticateAdminPassword(user.email, password);
-            } finally {
-                setRegisterSubmitting(false);
-            }
-            if (!adminAuthenticated) return;
             if (existingEmailIndex >= 0) users[existingEmailIndex] = user;
             else users.push(user);
             writeStoredValue(localStorage, 'users', JSON.stringify(users));
