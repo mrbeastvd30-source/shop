@@ -3107,9 +3107,12 @@
         // Admin Functions
         function openAdminPanel() {
             if (!isAdminAccount()) return;
+            isAdmin = true;
+            document.getElementById('adminPasswordSection').style.display = 'none';
+            document.getElementById('adminPanelSection').style.display = 'block';
+            renderAdminProducts();
             document.getElementById('adminModal').classList.add('active');
             animateModal('adminModal');
-            if (isAdmin) renderAdminProducts();
         }
 
         function checkAdminPassword() {
