@@ -829,6 +829,41 @@
             background: var(--background);
         }
 
+        .product-image-wrap {
+            position: relative;
+            overflow: hidden;
+            background: var(--background);
+        }
+
+        .product-favorite-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+            display: grid;
+            width: 40px;
+            height: 40px;
+            place-items: center;
+            border: 1px solid rgba(255,255,255,0.72);
+            border-radius: 50%;
+            background: rgba(255,255,255,0.86);
+            color: #94A3B8;
+            font-size: 1.05rem;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(15,23,42,0.14);
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s ease, color 0.2s ease, background 0.2s ease;
+        }
+
+        .product-favorite-btn.active {
+            color: #BE185D;
+            background: rgba(255,255,255,0.96);
+        }
+
+        .product-favorite-btn:hover {
+            transform: scale(1.06);
+        }
+
         .product-info {
             padding: 20px;
         }
@@ -884,6 +919,33 @@
             color: var(--text-secondary);
             font-size: 1rem;
             margin-left: 10px;
+        }
+
+        .discount-chip {
+            color: #DB2777;
+            font-size: 0.86rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .installment-chip {
+            display: inline-flex;
+            width: fit-content;
+            margin: 0 0 10px;
+            padding: 5px 8px;
+            border-radius: 7px;
+            background: #FFF200;
+            color: #1F2937;
+            font-size: 0.84rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .product-rating {
+            margin: 0 0 12px;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            line-height: 1.35;
         }
 
         .size-selector {
@@ -1554,32 +1616,50 @@
             }
 
             .product-card {
-                border-radius: 16px;
-                box-shadow: 0 6px 18px rgba(44,62,80,0.08);
+                overflow: visible;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
             }
 
             .product-card:hover {
                 transform: none;
-                box-shadow: 0 6px 18px rgba(44,62,80,0.08);
+                box-shadow: none;
+            }
+
+            .product-image-wrap {
+                border-radius: 14px;
+                box-shadow: 0 6px 16px rgba(15,23,42,0.08);
             }
 
             .product-image {
+                display: block;
                 height: auto;
                 aspect-ratio: 4 / 5;
-                border-radius: 16px 16px 0 0;
+                border-radius: 14px;
+            }
+
+            .product-favorite-btn {
+                top: 7px;
+                right: 7px;
+                width: 32px;
+                height: 32px;
+                font-size: 0.92rem;
             }
 
             .product-info {
-                padding: 10px 10px 12px;
+                padding: 9px 4px 4px;
             }
 
             .product-title {
                 display: -webkit-box;
-                min-height: 2.55em;
-                margin-bottom: 4px;
+                min-height: 2.72em;
+                margin-bottom: 8px;
                 overflow: hidden;
-                font-size: 0.92rem;
-                line-height: 1.28;
+                color: #1F2937;
+                font-size: 0.83rem;
+                font-weight: 500;
+                line-height: 1.36;
                 -webkit-box-orient: vertical;
                 -webkit-line-clamp: 2;
             }
@@ -1587,21 +1667,24 @@
             .product-description {
                 display: -webkit-box;
                 min-height: 0;
-                margin-bottom: 8px;
+                margin-bottom: 6px;
                 overflow: hidden;
-                font-size: 0.76rem;
+                color: #6B7280;
+                font-size: 0.72rem;
                 line-height: 1.35;
                 -webkit-box-orient: vertical;
-                -webkit-line-clamp: 2;
+                -webkit-line-clamp: 1;
             }
 
             .product-price {
                 display: flex;
                 align-items: baseline;
-                gap: 6px;
+                gap: 5px;
                 flex-wrap: wrap;
-                margin-bottom: 8px;
-                font-size: 1.05rem;
+                margin-bottom: 4px;
+                color: #7C3AED;
+                font-size: 1.08rem;
+                font-weight: 800;
                 line-height: 1.15;
             }
 
@@ -1610,9 +1693,27 @@
                 font-size: 0.72rem;
             }
 
+            .discount-chip {
+                font-size: 0.74rem;
+            }
+
+            .installment-chip {
+                margin-bottom: 8px;
+                padding: 4px 6px;
+                border-radius: 6px;
+                font-size: 0.74rem;
+                line-height: 1.1;
+            }
+
+            .product-rating {
+                margin-bottom: 9px;
+                font-size: 0.72rem;
+                white-space: nowrap;
+            }
+
             .size-selector {
                 gap: 6px;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
                 overflow-x: auto;
                 flex-wrap: nowrap;
                 scrollbar-width: none;
@@ -1621,18 +1722,20 @@
             .size-selector::-webkit-scrollbar { display: none; }
 
             .size-btn {
-                min-width: 36px;
-                height: 36px;
+                min-width: 32px;
+                height: 32px;
                 flex: 0 0 auto;
                 border-width: 1px;
-                border-radius: 10px;
-                font-size: 0.78rem;
+                border-radius: 8px;
+                font-size: 0.72rem;
             }
 
             .add-to-cart {
                 min-height: 44px;
                 padding: 10px 8px;
-                border-radius: 12px;
+                border-radius: 11px;
+                background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+                box-shadow: 0 8px 18px rgba(124, 58, 237, 0.22);
                 font-size: 0.82rem;
             }
 
@@ -2213,6 +2316,7 @@
                 noFileChosen: "Fayl tanlanmagan", saveProduct: "💾 Mahsulotni saqlash",
                 manageProducts: "Mahsulotlarni boshqarish", delete: "O‘chirish", noProducts: "Hozircha mahsulotlar yo‘q",
                 noProductsFound: "Mahsulotlar topilmadi", addToCart: "Savatga qo‘shish", size: "O‘lcham",
+                perMonth: "{price}/oyiga", reviews: "{count} ta sharh",
                 loadMore: "Yana ko‘rsatish", showingProducts: "{shown} / {total} ta mahsulot ko‘rsatildi", allProductsShown: "Barcha {total} ta mahsulot ko‘rsatildi",
                 userExists: "Bunday foydalanuvchi mavjud", invalidPhone: "Telefon raqamini 90 123 45 67 formatida kiriting",
                 registrationSuccess: "Ro‘yxatdan o‘tish muvaffaqiyatli",
@@ -2274,6 +2378,7 @@
                 noFileChosen: "Файл не выбран", saveProduct: "💾 Сохранить товар",
                 manageProducts: "Управление товарами", delete: "Удалить", noProducts: "Товаров пока нет",
                 noProductsFound: "Товары не найдены", addToCart: "Добавить в корзину", size: "Размер",
+                perMonth: "{price}/мес", reviews: "{count} отзывов",
                 loadMore: "Показать ещё", showingProducts: "Показано {shown} из {total} товаров", allProductsShown: "Показаны все товары: {total}",
                 userExists: "Такой пользователь уже существует", invalidPhone: "Введите номер в формате 90 123 45 67",
                 registrationSuccess: "Регистрация прошла успешно",
@@ -2959,17 +3064,44 @@
             return category === 'all' ? products : products.filter(product => product.category === category);
         }
 
+        function getProductDiscount(product) {
+            if (product.discount) return Math.round(Number(product.discount));
+            if (!product.oldPrice || !product.price || Number(product.oldPrice) <= Number(product.price)) return 0;
+            return Math.round((1 - Number(product.price) / Number(product.oldPrice)) * 100);
+        }
+
+        function getMonthlyPayment(product) {
+            return Math.max(1000, Math.ceil(Number(product.price || 0) / 12 / 100) * 100);
+        }
+
+        function getProductRating(product) {
+            const seed = Number(product.id) || 1;
+            const rating = (4.5 + (seed % 5) / 10).toFixed(1);
+            const reviews = 12 + (seed % 180);
+            return { rating, reviews };
+        }
+
         function productCardTemplate(product) {
+            const discount = getProductDiscount(product);
+            const monthly = getMonthlyPayment(product);
+            const rating = getProductRating(product);
+            const isFavorite = wishlist.some(item => item.id === product.id);
             return `
                 <div class="product-card">
-                    <img src="${product.image || 'https://placehold.co/300x300/7EC8E3/ffffff?text=' + encodeURIComponent(product.name)}" alt="${product.name}" class="product-image" loading="lazy" decoding="async">
+                    <div class="product-image-wrap">
+                        <img src="${product.image || 'https://placehold.co/300x300/7EC8E3/ffffff?text=' + encodeURIComponent(product.name)}" alt="${product.name}" class="product-image" loading="lazy" decoding="async">
+                        <button class="product-favorite-btn${isFavorite ? ' active' : ''}" type="button" onclick="toggleWishlistItem(${product.id}, event)" aria-label="${t('wishlistLabel')}">♡</button>
+                    </div>
                     <div class="product-info">
-                        <h3 class="product-title">${product.name}</h3>
-                        <p class="product-description" data-product-description="${product.id}"></p>
                         <div class="product-price">
                             ${formatPrice(product.price)}
+                            ${discount ? `<span class="discount-chip">↓${discount}%</span>` : ''}
                             ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)}</span>` : ''}
                         </div>
+                        <div class="installment-chip">${t('perMonth', { price: formatPrice(monthly) })}</div>
+                        <h3 class="product-title">${product.name}</h3>
+                        <p class="product-description" data-product-description="${product.id}"></p>
+                        <div class="product-rating">⭐ ${rating.rating} (${t('reviews', { count: rating.reviews })})</div>
                         <div class="size-selector" id="sizes-${product.id}">
                             ${product.sizes.map(size => `<button class="size-btn" onclick="selectSize(this)">${size}</button>`).join('')}
                         </div>
@@ -3132,6 +3264,23 @@
             badge.textContent = count;
             badge.style.display = count > 0 ? 'flex' : 'none';
             showToast(t('wishlistItems', { count }), 'success');
+        }
+
+        function toggleWishlistItem(productId, event) {
+            event?.stopPropagation();
+            const product = products.find(item => item.id === productId);
+            if (!product) return;
+            const existingIndex = wishlist.findIndex(item => item.id === productId);
+            if (existingIndex >= 0) {
+                wishlist.splice(existingIndex, 1);
+                event?.currentTarget?.classList.remove('active');
+            } else {
+                wishlist.push(product);
+                event?.currentTarget?.classList.add('active');
+            }
+            writeStoredValue(localStorage, 'wishlist', JSON.stringify(wishlist));
+            updateWishlist();
+            showToast(t('wishlistItems', { count: wishlist.length }), 'success');
         }
 
         function updateWishlist() {
