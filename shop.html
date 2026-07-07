@@ -2434,8 +2434,8 @@
 
         function syncErrorMessage() {
             return currentLanguage === 'ru'
-                ? 'Не удалось сохранить товары на общий сервер. Проверьте переменные Vercel.'
-                : 'Mahsulotlarni umumiy serverga saqlab bo‘lmadi. Vercel sozlamalarini tekshiring.';
+                ? 'Не удалось изменить товары. Войдите снова через sabinastyle77@gmail.com и проверьте Vercel/Supabase.'
+                : 'Mahsulotlarni o‘zgartirib bo‘lmadi. sabinastyle77@gmail.com orqali qayta kiring va Vercel/Supabase sozlamalarini tekshiring.';
         }
 
         async function getAdminAccessToken() {
@@ -2483,7 +2483,7 @@
         }
 
         async function saveSharedProducts(nextProducts) {
-            if (!isAdminAccount() || !isAdmin) throw new Error('Admin access required');
+            if (!isAdminEmailAccount() || !isAdmin) throw new Error('Admin access required');
             const accessToken = await getAdminAccessToken();
             const normalized = nextProducts.map(normalizeProduct);
             const response = await fetch(PRODUCTS_API, {
@@ -3318,7 +3318,10 @@
 
         function addProduct(e) {
             e.preventDefault();
-            if (!isAdminAccount() || !isAdmin) return;
+            if (!isAdminEmailAccount() || !isAdmin) {
+                showToast(syncErrorMessage(), 'error');
+                return;
+            }
             
             const fileInput = document.getElementById('prodImage');
             const product = {
@@ -3403,15 +3406,20 @@
                         <div class="admin-product-name">${product.name}</div>
                         <div class="admin-product-price">${formatPrice(product.price)}</div>
                     </div>
-                    <button type="button" class="delete-product-btn" onclick="deleteProduct(${product.id})">${t('delete')}</button>
+                    <button type="button" class="delete-product-btn" data-delete-product="${product.id}" onclick="deleteProduct(${product.id})">${t('delete')}</button>
                 </article>
             `).join('');
         }
 
         async function deleteProduct(productId) {
-            if (!isAdminAccount() || !isAdmin) return;
+            if (!isAdminEmailAccount() || !isAdmin) {
+                showToast(syncErrorMessage(), 'error');
+                return;
+            }
             const product = products.find(item => item.id === productId);
             if (!product || !confirm(t('confirmDelete', { name: product.name }))) return;
+            const deleteButton = document.querySelector(`[data-delete-product="${productId}"]`);
+            if (deleteButton) deleteButton.disabled = true;
             try {
                 await saveSharedProducts(products.filter(item => item.id !== productId));
                 cart = cart.filter(item => item.id !== productId);
@@ -3426,6 +3434,8 @@
             } catch (error) {
                 console.error('Product delete sync failed:', error);
                 showToast(syncErrorMessage(), 'error');
+            } finally {
+                if (deleteButton) deleteButton.disabled = false;
             }
         }
 
