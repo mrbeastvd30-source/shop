@@ -2289,6 +2289,8 @@
                 sendingCode: "Kod yuborilmoqda...", fillRequired: "Barcha majburiy maydonlarni to‘ldiring",
                 invalidCredentials: "Email, telefon yoki parol noto‘g‘ri", welcomeBack: "Xush kelibsiz!",
                 adminPasswordMismatch: "Administrator paroli tekshirilmadi. Supabase’dagi parolni kiriting yoki internetni tekshiring.",
+                adminPasswordPrompt: "Mahsulotlarni o‘zgartirish uchun Supabase administrator parolini kiriting:",
+                adminAuthRequired: "Administrator paroli noto‘g‘ri. Supabase’dagi parolni kiriting.",
                 addedToCart: "Savatga qo‘shildi", removedFromCart: "Savatdan olib tashlandi",
                 wishlistItems: "Sevimlilar: {count} ta", cartIsEmpty: "Savatingiz bo‘sh!",
                 orderSuccess: "Buyurtma muvaffaqiyatli yuborildi", adminGranted: "Administratorga kirish ochildi",
@@ -2351,6 +2353,8 @@
                 sendingCode: "Отправляем код...", fillRequired: "Заполните все обязательные поля",
                 invalidCredentials: "Неверный email, телефон или пароль", welcomeBack: "С возвращением!",
                 adminPasswordMismatch: "Пароль администратора не проверен. Введите пароль из Supabase или проверьте интернет.",
+                adminPasswordPrompt: "Введите пароль администратора Supabase, чтобы изменять товары:",
+                adminAuthRequired: "Пароль администратора неверный. Введите пароль из Supabase.",
                 addedToCart: "Добавлено в корзину", removedFromCart: "Удалено из корзины",
                 wishlistItems: "В избранном: {count}", cartIsEmpty: "Корзина пуста!",
                 orderSuccess: "Заказ успешно оформлен", adminGranted: "Доступ администратора открыт",
@@ -2455,12 +2459,41 @@
             }
         }
 
+        async function requestAdminSessionPassword() {
+            if (!supabaseClient || !isAdminEmailAccount()) return false;
+            const password = window.prompt(t('adminPasswordPrompt'));
+            if (!password) return false;
+            try {
+                const { data, error } = await withTimeout(supabaseClient.auth.signInWithPassword({
+                    email: ADMIN_EMAIL,
+                    password
+                }), 8000);
+                if (error || data.user?.email?.trim().toLowerCase() !== ADMIN_EMAIL) throw error || new Error('Admin email mismatch');
+                supabaseAuthUser = data.user;
+                currentUser.password = btoa(password);
+                const userIndex = users.findIndex(user => user.email?.trim().toLowerCase() === ADMIN_EMAIL);
+                if (userIndex >= 0) users[userIndex] = currentUser;
+                writeStoredValue(localStorage, 'users', JSON.stringify(users));
+                writeStoredValue(localStorage, 'currentUser', JSON.stringify(currentUser));
+                return true;
+            } catch (error) {
+                console.error('Admin prompt sign-in failed:', error);
+                showToast(t('adminAuthRequired'), 'error');
+                return false;
+            }
+        }
+
         async function getAdminAccessToken() {
             if (!supabaseClient) throw new Error('Supabase client unavailable');
             let { data } = await supabaseClient.auth.getSession();
             let session = data.session;
             if (!session?.access_token || session.user?.email?.toLowerCase() !== ADMIN_EMAIL) {
                 await restoreAdminSessionFromSavedPassword();
+                ({ data } = await supabaseClient.auth.getSession());
+                session = data.session;
+            }
+            if (!session?.access_token || session.user?.email?.toLowerCase() !== ADMIN_EMAIL) {
+                await requestAdminSessionPassword();
                 ({ data } = await supabaseClient.auth.getSession());
                 session = data.session;
             }
