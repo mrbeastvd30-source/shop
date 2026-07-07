@@ -2143,7 +2143,7 @@
                 otpSendError: "Kod yuborilmadi. Internet, email va SMTP sozlamalarini tekshiring.", verifying: "Tekshirilmoqda...",
                 sendingCode: "Kod yuborilmoqda...", fillRequired: "Barcha majburiy maydonlarni to‘ldiring",
                 invalidCredentials: "Email, telefon yoki parol noto‘g‘ri", welcomeBack: "Xush kelibsiz!",
-                adminPasswordMismatch: "Supabase’da administrator uchun yaratilgan parolni kiriting",
+                adminPasswordMismatch: "Administrator paroli tekshirilmadi. Supabase’dagi parolni kiriting yoki internetni tekshiring.",
                 addedToCart: "Savatga qo‘shildi", removedFromCart: "Savatdan olib tashlandi",
                 wishlistItems: "Sevimlilar: {count} ta", cartIsEmpty: "Savatingiz bo‘sh!",
                 orderSuccess: "Buyurtma muvaffaqiyatli yuborildi", adminGranted: "Administratorga kirish ochildi",
@@ -2204,7 +2204,7 @@
                 otpSendError: "Не удалось отправить код. Проверьте интернет, email и настройки SMTP.", verifying: "Проверяем...",
                 sendingCode: "Отправляем код...", fillRequired: "Заполните все обязательные поля",
                 invalidCredentials: "Неверный email, телефон или пароль", welcomeBack: "С возвращением!",
-                adminPasswordMismatch: "Введите пароль, который вы задали администратору в Supabase",
+                adminPasswordMismatch: "Пароль администратора не проверен. Введите пароль из Supabase или проверьте интернет.",
                 addedToCart: "Добавлено в корзину", removedFromCart: "Удалено из корзины",
                 wishlistItems: "В избранном: {count}", cartIsEmpty: "Корзина пуста!",
                 orderSuccess: "Заказ успешно оформлен", adminGranted: "Доступ администратора открыт",
@@ -2698,7 +2698,7 @@
                 return false;
             }
             try {
-                const { data, error } = await withTimeout(supabaseClient.auth.signInWithPassword({ email, password }));
+                const { data, error } = await withTimeout(supabaseClient.auth.signInWithPassword({ email, password }), 8000);
                 if (error || data.user?.email?.trim().toLowerCase() !== ADMIN_EMAIL) throw error || new Error('Admin email mismatch');
                 supabaseAuthUser = data.user;
                 return true;
@@ -2771,8 +2771,12 @@
             }
 
             setRegisterSubmitting(true, 'verifying');
-            const adminAuthenticated = await authenticateAdminPassword(user.email, password);
-            setRegisterSubmitting(false);
+            let adminAuthenticated = false;
+            try {
+                adminAuthenticated = await authenticateAdminPassword(user.email, password);
+            } finally {
+                setRegisterSubmitting(false);
+            }
             if (!adminAuthenticated) return;
             if (existingEmailIndex >= 0) users[existingEmailIndex] = user;
             else users.push(user);
