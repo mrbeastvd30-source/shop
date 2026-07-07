@@ -1548,12 +1548,93 @@
             }
 
             .products-grid {
-                grid-template-columns: minmax(0, 1fr);
-                gap: 20px;
-                padding: 0 16px 48px;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+                padding: 0 12px 56px;
             }
 
-            .product-image { height: auto; aspect-ratio: 4 / 3; }
+            .product-card {
+                border-radius: 16px;
+                box-shadow: 0 6px 18px rgba(44,62,80,0.08);
+            }
+
+            .product-card:hover {
+                transform: none;
+                box-shadow: 0 6px 18px rgba(44,62,80,0.08);
+            }
+
+            .product-image {
+                height: auto;
+                aspect-ratio: 4 / 5;
+                border-radius: 16px 16px 0 0;
+            }
+
+            .product-info {
+                padding: 10px 10px 12px;
+            }
+
+            .product-title {
+                display: -webkit-box;
+                min-height: 2.55em;
+                margin-bottom: 4px;
+                overflow: hidden;
+                font-size: 0.92rem;
+                line-height: 1.28;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+            }
+
+            .product-description {
+                display: -webkit-box;
+                min-height: 0;
+                margin-bottom: 8px;
+                overflow: hidden;
+                font-size: 0.76rem;
+                line-height: 1.35;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+            }
+
+            .product-price {
+                display: flex;
+                align-items: baseline;
+                gap: 6px;
+                flex-wrap: wrap;
+                margin-bottom: 8px;
+                font-size: 1.05rem;
+                line-height: 1.15;
+            }
+
+            .product-price .old-price {
+                margin-left: 0;
+                font-size: 0.72rem;
+            }
+
+            .size-selector {
+                gap: 6px;
+                margin-bottom: 10px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                scrollbar-width: none;
+            }
+
+            .size-selector::-webkit-scrollbar { display: none; }
+
+            .size-btn {
+                min-width: 36px;
+                height: 36px;
+                flex: 0 0 auto;
+                border-width: 1px;
+                border-radius: 10px;
+                font-size: 0.78rem;
+            }
+
+            .add-to-cart {
+                min-height: 44px;
+                padding: 10px 8px;
+                border-radius: 12px;
+                font-size: 0.82rem;
+            }
 
             .empty-state {
                 min-height: 260px;
