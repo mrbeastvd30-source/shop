@@ -2999,10 +2999,14 @@
             return localEmail === ADMIN_EMAIL && verifiedEmail === ADMIN_EMAIL;
         }
 
+        function isAdminEmailAccount() {
+            return currentUser?.email?.trim().toLowerCase() === ADMIN_EMAIL;
+        }
+
         function updateAdminAccess() {
             const adminAccess = document.getElementById('adminAccess');
-            if (adminAccess) adminAccess.hidden = !isAdminAccount();
-            if (!isAdminAccount()) isAdmin = false;
+            if (adminAccess) adminAccess.hidden = !isAdminEmailAccount();
+            if (!isAdminEmailAccount()) isAdmin = false;
         }
 
         // Product Functions
@@ -3281,7 +3285,7 @@
 
         // Admin Functions
         function openAdminPanel() {
-            if (!isAdminAccount()) return;
+            if (!isAdminEmailAccount()) return;
             isAdmin = true;
             document.getElementById('adminPasswordSection').style.display = 'none';
             document.getElementById('adminPanelSection').style.display = 'block';
